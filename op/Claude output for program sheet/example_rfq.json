@@ -1,0 +1,40 @@
+﻿{
+  "part_name": "Example Bracket",
+  "material": {
+    "name": "mild_steel",
+    "shape": "block"
+  },
+  "surface_finishes": [
+    "Electroless Nickel Plating",
+    "Sandblasting"
+  ],
+  "inspection_level": "cmm",
+  "packaging": "wooden_box",
+  "shipping": "train",
+  "secondary_operations": [
+    {
+      "type": "tapping",
+      "spec": "M6",
+      "count": 1
+    },
+    {
+      "type": "reaming",
+      "spec": "Dia 8",
+      "count": 1
+    }
+  ],
+  "manual_costs": [
+    {
+      "category": "manual",
+      "name": "Fixture adjustment",
+      "cost": 0.0,
+      "basis": "per_batch",
+      "notes": "Use this section for one-off commercial adjustments."
+    }
+  ],
+  "commercial": {
+    "overhead_percent": 0.0,
+    "profit_percent": 0.0,
+    "contingency_percent": 0.0
+  }
+}

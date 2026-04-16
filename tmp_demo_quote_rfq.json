@@ -1,0 +1,264 @@
+﻿{
+  "quote_version": "2.0",
+  "generated_at": "2026-03-24T08:42:50+00:00",
+  "currency": "INR",
+  "quantity": 1,
+  "material": "mild_steel",
+  "quote_inputs": {
+    "features_supplied": true,
+    "rfq_supplied": true,
+    "inspection_level": "cmm",
+    "surface_finishes": [
+      "Electroless Nickel Plating",
+      "Sandblasting"
+    ],
+    "packaging": "wooden_box",
+    "shipping": "train"
+  },
+  "derived_context": {
+    "part": {
+      "setup_count": 1,
+      "quantity": 1,
+      "bbox_mm": {
+        "x": 200.0,
+        "y": 65.0,
+        "z": 100.0
+      },
+      "max_dimension_mm": 200.0,
+      "surface_area_proxy_mm2": 79000.0
+    },
+    "stock": {
+      "shape": "block",
+      "size_class": "medium",
+      "stock_dims_mm": {
+        "x": 206.0,
+        "y": 71.0,
+        "z": 104.0
+      },
+      "part_volume_mm3": 1003141.593,
+      "stock_volume_mm3": 1521104.0,
+      "part_mass_kg": 7.8747,
+      "stock_mass_kg": 11.9407,
+      "removed_mass_kg": 4.066,
+      "price_per_kg": 75.0
+    },
+    "processes": {
+      "milling_3axis": {
+        "family": "milling_3axis",
+        "cycle_time_min": 4.45,
+        "step_count": 6,
+        "setup_ids": [
+          1
+        ],
+        "operations": {
+          "face_mill": 1,
+          "circular_interp": 1,
+          "contour_mill": 4
+        },
+        "feature_types": {
+          "large_bore": 2,
+          "boss": 4
+        },
+        "setup_count": 1
+      }
+    },
+    "signals": {
+      "total_steps": 6,
+      "substitutions": 0,
+      "rpm_capped": 1,
+      "tool_not_found": 0,
+      "deep_peck_ops": 0,
+      "warnings": 0
+    }
+  },
+  "line_items": [
+    {
+      "category": "material",
+      "code": "raw_material",
+      "description": "Raw material (mild_steel, block stock)",
+      "cost": 895.55,
+      "quantity": 11.9407,
+      "unit": "kg",
+      "unit_price": 75.0,
+      "basis": "per_batch",
+      "source": "code-ass1.xlsx manual quote workbook",
+      "details": {
+        "size_class": "medium",
+        "stock_dims_mm": {
+          "x": 206.0,
+          "y": 71.0,
+          "z": 104.0
+        },
+        "part_mass_kg": 7.8747,
+        "stock_mass_kg_per_part": 11.9407,
+        "removed_mass_kg_per_part": 4.066,
+        "quantity": 1
+      }
+    },
+    {
+      "category": "machining",
+      "code": "milling_3axis",
+      "description": "CNC Machining 3-axis",
+      "cost": 1029.67,
+      "quantity": 0.074,
+      "unit": "hr",
+      "unit_price": 400.0,
+      "basis": "cycle_time + setups",
+      "source": "code-ass1.xlsx manual quote workbook",
+      "details": {
+        "setup_count": 1,
+        "setup_cost_per_setup": 1000.0,
+        "cycle_time_min": 4.45,
+        "step_count": 6,
+        "operations": {
+          "face_mill": 1,
+          "circular_interp": 1,
+          "contour_mill": 4
+        },
+        "feature_types": {
+          "large_bore": 2,
+          "boss": 4
+        }
+      }
+    },
+    {
+      "category": "engineering",
+      "code": "cam_programming",
+      "description": "CAM Programming",
+      "cost": 221.08,
+      "quantity": 0.316,
+      "unit": "hr",
+      "unit_price": 700.0,
+      "basis": "complexity weighted",
+      "source": "internal baseline; intentionally conservative",
+      "details": {
+        "base_minutes": 8.0,
+        "minutes_per_setup": 4.0,
+        "minutes_per_unique_operation": 1.5,
+        "weighted_features": 7.0,
+        "unique_operation_count": 3,
+        "total_minutes": 18.95
+      }
+    },
+    {
+      "category": "inspection",
+      "code": "cmm",
+      "description": "CMM Inspection",
+      "cost": 2500.0,
+      "quantity": 1.5,
+      "unit": "hr",
+      "unit_price": 1000.0,
+      "basis": "per_batch",
+      "source": "code-ass1.xlsx manual quote workbook",
+      "details": {
+        "setup_cost": 1000.0,
+        "inspection_level": "cmm",
+        "setup_count": 1,
+        "feature_count": 5
+      }
+    },
+    {
+      "category": "post_processing",
+      "code": "electroless_nickel_plating",
+      "description": "Electroless Nickel Plating",
+      "cost": 2000.0,
+      "basis": "per_batch",
+      "source": "code-ass1.xlsx manual quote workbook",
+      "details": {
+        "metric": "stock_mass_kg",
+        "metric_value": 11.941,
+        "tier": "medium",
+        "charge_basis": "per_batch"
+      }
+    },
+    {
+      "category": "post_processing",
+      "code": "sandblasting",
+      "description": "Sandblasting",
+      "cost": 1500.0,
+      "basis": "per_batch",
+      "source": "code-ass1.xlsx manual quote workbook",
+      "details": {
+        "metric": "stock_mass_kg",
+        "metric_value": 11.941,
+        "tier": "medium",
+        "charge_basis": "per_batch"
+      }
+    },
+    {
+      "category": "post_processing",
+      "code": "tapping",
+      "description": "Tapping M6",
+      "cost": 2000.0,
+      "quantity": 1.0,
+      "unit": "op",
+      "unit_price": 2000.0,
+      "basis": "per_batch",
+      "source": "code-ass1.xlsx manual quote workbook",
+      "details": {
+        "spec": "M6",
+        "count": 1.0,
+        "quantity": 1
+      }
+    },
+    {
+      "category": "post_processing",
+      "code": "reaming",
+      "description": "Reaming Dia 8",
+      "cost": 1500.0,
+      "quantity": 1.0,
+      "unit": "op",
+      "unit_price": 1500.0,
+      "basis": "per_batch",
+      "source": "code-ass1.xlsx manual quote workbook",
+      "details": {
+        "spec": "Dia 8",
+        "count": 1.0,
+        "quantity": 1
+      }
+    },
+    {
+      "category": "logistics",
+      "code": "wooden_box",
+      "description": "Packaging",
+      "cost": 1500.0,
+      "basis": "per_batch",
+      "source": "code-ass1.xlsx manual quote workbook",
+      "details": {
+        "size_class": "medium"
+      }
+    },
+    {
+      "category": "logistics",
+      "code": "train",
+      "description": "Logistics",
+      "cost": 1500.0,
+      "basis": "per_batch",
+      "source": "code-ass1.xlsx manual quote workbook",
+      "details": {
+        "size_class": "medium"
+      }
+    }
+  ],
+  "category_totals": {
+    "material": 895.55,
+    "machining": 1029.67,
+    "engineering": 221.08,
+    "inspection": 2500.0,
+    "post_processing": 7000.0,
+    "logistics": 3000.0
+  },
+  "totals": {
+    "batch_total": 14646.3,
+    "unit_price": 14646.3
+  },
+  "confidence": 0.876,
+  "risk_notes": [
+    "Multiple operations are RPM-capped; actual cycle time may drift."
+  ],
+  "price_book": {
+    "path": "d:\\insta-quote\\op\\Claude output for program sheet\\quote_price_book.json",
+    "version": "2026-03-24-baseline",
+    "updated_at": "2026-03-24T00:00:00Z"
+  }
+}

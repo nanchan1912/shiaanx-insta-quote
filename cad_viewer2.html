@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAD Viewer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0f12;
+    --surface: #141720;
+    --surface2: #1c2030;
+    --border: #252a3a;
+    --accent: #4df0c0;
+    --accent2: #5b8fff;
+    --warn: #ff6b6b;
+    --text: #e0e6f0;
+    --text-dim: #6b7899;
+    --axis-x: #ff4d4d;
+    --axis-y: #4dff88;
+    --axis-z: #4d9fff;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+    height: 52px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    z-index: 10;
+  }
+
+  .logo {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .logo span { color: var(--text-dim); }
+
+  .divider { width: 1px; height: 24px; background: var(--border); }
+
+  .file-info {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    flex: 1;
+  }
+
+  .file-info .name { color: var(--text); }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+    text-transform: uppercase;
+  }
+
+  .btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(77,240,192,0.06); }
+  .btn.primary { border-color: var(--accent); color: var(--accent); background: rgba(77,240,192,0.08); }
+  .btn.primary:hover { background: rgba(77,240,192,0.16); }
+
+  /* MAIN AREA */
+  .workspace {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: grab;
+  }
+
+  #canvas:active { cursor: grabbing; }
+
+  /* DROP OVERLAY */
+  #drop-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    background: var(--bg);
+    z-index: 5;
+    transition: opacity 0.3s;
+  }
+
+  #drop-overlay.hidden { opacity: 0; pointer-events: none; }
+
+  .drop-zone {
+    width: 380px;
+    height: 220px;
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: border-color 0.2s, background 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(77,240,192,0.04);
+  }
+
+  .drop-zone input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .drop-icon {
+    width: 48px;
+    height: 48px;
+    opacity: 0.3;
+  }
+
+  .drop-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.05em;
+  }
+
+  .drop-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .supported-formats {
+    display: flex;
+    gap: 8px;
+  }
+
+  .fmt-badge {
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
+
+  /* LOADING */
+  #loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    background: rgba(13,15,18,0.92);
+    z-index: 20;
+    display: none;
+  }
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  /* XYZ AXIS GIZMO */
+  #gizmo {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    width: 100px;
+    height: 100px;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  #gizmo canvas {
+    width: 100px;
+    height: 100px;
+  }
+
+  /* CONTROLS PANEL */
+  #controls-panel {
+    position: absolute;
+    bottom: 24px;
+    left: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    z-index: 10;
+    display: none;
+  }
+
+  #controls-panel.visible { display: block; }
+
+  .panel-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 6px;
+    font-size: 11px;
+  }
+
+  .stat-label { color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; }
+  .stat-val { color: var(--text); font-family: 'IBM Plex Mono', monospace; font-weight: 500; }
+
+  .controls-hint {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    font-size: 10px;
+    color: var(--text-dim);
+    line-height: 1.8;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .controls-hint b { color: var(--text); font-weight: 500; }
+
+  /* TOOLBAR */
+  #toolbar {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+    display: none;
+  }
+
+  #toolbar.visible { display: flex; }
+
+  /* ERROR */
+  #error-msg {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,107,107,0.1);
+    border: 1px solid var(--warn);
+    color: var(--warn);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    z-index: 30;
+    display: none;
+  }
+
+  /* GRID LINES subtle */
+  .workspace::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(36,42,60,0.4) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(36,42,60,0.4) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #canvas { position: relative; z-index: 1; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">CAD<span>//</span>VIEW</div>
+  <div class="divider"></div>
+  <div class="file-info" id="header-file-info">No file loaded</div>
+  <button class="btn primary" id="open-btn">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    Open File
+  </button>
+  <button class="btn" id="reset-btn">Reset View</button>
+  <input type="file" id="file-input" accept=".step,.stp" style="display:none">
+</header>
+
+<div class="workspace">
+  <canvas id="canvas"></canvas>
+
+  <!-- Drop overlay -->
+  <div id="drop-overlay">
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="drop-input" accept=".step,.stp">
+      <svg class="drop-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="8" y="16" width="48" height="36" rx="4" stroke="currentColor"/>
+        <path d="M8 24h48M20 16V8M32 16V8M44 16V8" stroke="currentColor"/>
+        <path d="M26 36l6 6 6-6M32 42V30" stroke="currentColor" stroke-width="2"/>
+      </svg>
+      <div class="drop-title">DROP YOUR CAD FILE</div>
+      <div class="drop-sub">or click to browse</div>
+      <div class="supported-formats">
+        <span class="fmt-badge">.STEP</span>
+        <span class="fmt-badge">.STP</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loading-text">Initializing CAD kernel...</div>
+  </div>
+
+  <!-- Error -->
+  <div id="error-msg"></div>
+
+  <!-- Toolbar -->
+  <div id="toolbar">
+    <button class="btn" id="wireframe-btn">Wireframe</button>
+    <button class="btn" id="shaded-btn">Shaded</button>
+    <button class="btn" id="shaded-wire-btn">Shaded+Edges</button>
+    <button class="btn" id="fit-btn">Fit All</button>
+  </div>
+
+  <!-- Stats / controls panel -->
+  <div id="controls-panel">
+    <div class="panel-title">Model Info</div>
+    <div class="stat-row"><span class="stat-label">Vertices</span><span class="stat-val" id="stat-verts">—</span></div>
+    <div class="stat-row"><span class="stat-label">Triangles</span><span class="stat-val" id="stat-tris">—</span></div>
+    <div class="stat-row"><span class="stat-label">File</span><span class="stat-val" id="stat-file">—</span></div>
+    <div class="controls-hint">
+      <b>Rotate</b> · Left drag<br>
+      <b>Pan</b> · Right drag<br>
+      <b>Zoom</b> · Scroll wheel
+    </div>
+  </div>
+
+  <!-- XYZ Axis Gizmo -->
+  <canvas id="gizmo" width="100" height="100"></canvas>
+</div>
+
+<!-- Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- opencascade.js via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/opencascade.js@1.1.1/dist/opencascade.wasm.js"></script>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let oc = null;
+let scene, camera, renderer, mainGroup;
+let isDragging = false, isRightDrag = false;
+let prevMouse = { x: 0, y: 0 };
+let spherical = { theta: 0.5, phi: 1.0, radius: 5 };
+let panOffset = new THREE.Vector3();
+let renderMode = 'shaded-wire';
+let currentMeshes = [];
+
+// ─── DOM ──────────────────────────────────────────────────────────────────────
+const canvas       = document.getElementById('canvas');
+const gizmoCanvas  = document.getElementById('gizmo');
+const dropOverlay  = document.getElementById('drop-overlay');
+const loadingEl    = document.getElementById('loading');
+const loadingText  = document.getElementById('loading-text');
+const errorEl      = document.getElementById('error-msg');
+const fileInput    = document.getElementById('file-input');
+const dropInput    = document.getElementById('drop-input');
+const dropZone     = document.getElementById('drop-zone');
+const toolbar      = document.getElementById('toolbar');
+const controlsPanel= document.getElementById('controls-panel');
+const headerInfo   = document.getElementById('header-file-info');
+
+// ─── Three.js Setup ───────────────────────────────────────────────────────────
+function initThree() {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setClearColor(0x0d0f12, 1);
+  renderer.shadowMap.enabled = true;
+
+  scene = new THREE.Scene();
+
+  camera = new THREE.PerspectiveCamera(45, 1, 0.001, 10000);
+  camera.position.set(5, 4, 5);
+  camera.lookAt(0, 0, 0);
+
+  // Lights
+  const ambient = new THREE.AmbientLight(0xffffff, 0.45);
+  scene.add(ambient);
+
+  const dir1 = new THREE.DirectionalLight(0xffffff, 0.8);
+  dir1.position.set(10, 20, 15);
+  scene.add(dir1);
+
+  const dir2 = new THREE.DirectionalLight(0x6090ff, 0.3);
+  dir2.position.set(-10, -5, -10);
+  scene.add(dir2);
+
+  mainGroup = new THREE.Group();
+  scene.add(mainGroup);
+
+  // Grid helper
+  const grid = new THREE.GridHelper(10, 20, 0x1c2030, 0x1c2030);
+  scene.add(grid);
+
+  resize();
+  window.addEventListener('resize', resize);
+  animate();
+}
+
+function resize() {
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+
+// ─── Camera orbit ─────────────────────────────────────────────────────────────
+function updateCamera() {
+  const { theta, phi, radius } = spherical;
+  camera.position.set(
+    panOffset.x + radius * Math.sin(phi) * Math.sin(theta),
+    panOffset.y + radius * Math.cos(phi),
+    panOffset.z + radius * Math.sin(phi) * Math.cos(theta)
+  );
+  camera.lookAt(panOffset);
+}
+
+canvas.addEventListener('mousedown', e => {
+  isDragging = true;
+  isRightDrag = e.button === 2;
+  prevMouse = { x: e.clientX, y: e.clientY };
+});
+
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+window.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  const dx = e.clientX - prevMouse.x;
+  const dy = e.clientY - prevMouse.y;
+  prevMouse = { x: e.clientX, y: e.clientY };
+
+  if (isRightDrag) {
+    // Pan
+    const panSpeed = spherical.radius * 0.001;
+    const right = new THREE.Vector3();
+    const up = new THREE.Vector3();
+    camera.getWorldDirection(new THREE.Vector3());
+    right.crossVectors(camera.getWorldDirection(new THREE.Vector3()), camera.up).normalize();
+    up.copy(camera.up);
+    panOffset.addScaledVector(right, -dx * panSpeed);
+    panOffset.addScaledVector(up, dy * panSpeed);
+  } else {
+    // Orbit
+    spherical.theta -= dx * 0.007;
+    spherical.phi = Math.max(0.05, Math.min(Math.PI - 0.05, spherical.phi - dy * 0.007));
+  }
+  updateCamera();
+});
+
+window.addEventListener('mouseup', () => { isDragging = false; });
+
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  spherical.radius *= 1 + e.deltaY * 0.001;
+  spherical.radius = Math.max(0.01, Math.min(10000, spherical.radius));
+  updateCamera();
+}, { passive: false });
+
+// Touch support
+let lastTouchDist = null;
+canvas.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) {
+    isDragging = true; isRightDrag = false;
+    prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  } else if (e.touches.length === 2) {
+    lastTouchDist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+  }
+}, { passive: true });
+
+canvas.addEventListener('touchmove', e => {
+  if (e.touches.length === 1 && isDragging) {
+    const dx = e.touches[0].clientX - prevMouse.x;
+    const dy = e.touches[0].clientY - prevMouse.y;
+    prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    spherical.theta -= dx * 0.007;
+    spherical.phi = Math.max(0.05, Math.min(Math.PI - 0.05, spherical.phi - dy * 0.007));
+    updateCamera();
+  } else if (e.touches.length === 2) {
+    const dist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    if (lastTouchDist) spherical.radius *= lastTouchDist / dist;
+    lastTouchDist = dist;
+    updateCamera();
+  }
+}, { passive: true });
+
+canvas.addEventListener('touchend', () => { isDragging = false; lastTouchDist = null; });
+
+// ─── Gizmo ────────────────────────────────────────────────────────────────────
+const gizmoCtx = gizmoCanvas.getContext('2d');
+const GIZMO_SIZE = 100;
+const GIZMO_CENTER = 50;
+const GIZMO_LEN = 36;
+
+function drawGizmo() {
+  const ctx = gizmoCtx;
+  ctx.clearRect(0, 0, GIZMO_SIZE, GIZMO_SIZE);
+
+  // Background circle
+  ctx.beginPath();
+  ctx.arc(GIZMO_CENTER, GIZMO_CENTER, 44, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(20, 23, 32, 0.85)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(37, 42, 58, 0.8)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Get camera orientation matrix
+  const mat = new THREE.Matrix4().extractRotation(camera.matrixWorldInverse);
+
+  const axes = [
+    { dir: new THREE.Vector3(1, 0, 0), color: '#ff4d4d', neg: '#7a1a1a', label: 'X' },
+    { dir: new THREE.Vector3(0, 1, 0), color: '#4dff88', neg: '#1a7a3a', label: 'Y' },
+    { dir: new THREE.Vector3(0, 0, 1), color: '#4d9fff', neg: '#1a407a', label: 'Z' },
+  ];
+
+  // Project axes
+  const projected = axes.map(a => {
+    const v = a.dir.clone().applyMatrix4(mat);
+    return {
+      ...a,
+      x: v.x * GIZMO_LEN,
+      y: -v.y * GIZMO_LEN,
+      depth: v.z,
+    };
+  });
+
+  // Sort by depth (draw back to front)
+  const sorted = [...projected].sort((a, b) => a.depth - b.depth);
+
+  sorted.forEach(({ x, y, depth, color, neg, label }) => {
+    const isBack = depth < 0;
+    const cx = GIZMO_CENTER + x;
+    const cy = GIZMO_CENTER + y;
+    const axisColor = isBack ? neg : color;
+    const alpha = isBack ? 0.5 : 1.0;
+
+    ctx.globalAlpha = alpha;
+
+    // Axis line
+    ctx.beginPath();
+    ctx.moveTo(GIZMO_CENTER, GIZMO_CENTER);
+    ctx.lineTo(cx, cy);
+    ctx.strokeStyle = axisColor;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Endpoint circle
+    ctx.beginPath();
+    ctx.arc(cx, cy, isBack ? 4 : 5, 0, Math.PI * 2);
+    ctx.fillStyle = axisColor;
+    ctx.fill();
+
+    // Label
+    if (!isBack) {
+      ctx.font = 'bold 10px IBM Plex Mono, monospace';
+      ctx.fillStyle = axisColor;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const lx = GIZMO_CENTER + x * 1.4;
+      const ly = GIZMO_CENTER + y * 1.4;
+      ctx.fillText(label, lx, ly);
+    }
+  });
+
+  ctx.globalAlpha = 1;
+
+  // Center dot
+  ctx.beginPath();
+  ctx.arc(GIZMO_CENTER, GIZMO_CENTER, 3, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffffff';
+  ctx.fill();
+}
+
+// ─── Render loop ──────────────────────────────────────────────────────────────
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+  drawGizmo();
+}
+
+// ─── OpenCascade init ─────────────────────────────────────────────────────────
+function showLoading(msg) {
+  loadingEl.style.display = 'flex';
+  loadingText.textContent = msg || 'Loading...';
+}
+
+function hideLoading() {
+  loadingEl.style.display = 'none';
+}
+
+function showError(msg) {
+  errorEl.textContent = msg;
+  errorEl.style.display = 'block';
+  setTimeout(() => { errorEl.style.display = 'none'; }, 5000);
+}
+
+async function initOC() {
+  showLoading('Initializing CAD kernel...');
+  try {
+    oc = await opencascade({
+      locateFile: file => `https://cdn.jsdelivr.net/npm/opencascade.js@1.1.1/dist/${file}`
+    });
+    hideLoading();
+  } catch (e) {
+    hideLoading();
+    showError('Failed to load CAD kernel: ' + e.message);
+  }
+}
+
+// ─── STEP Loading ─────────────────────────────────────────────────────────────
+async function loadSTEP(file) {
+  if (!oc) { showError('CAD kernel not ready'); return; }
+
+  showLoading('Reading file...');
+
+  try {
+    const buffer = await file.arrayBuffer();
+    const uint8 = new Uint8Array(buffer);
+    const fileName = '/model.step';
+
+    // Write to OC virtual FS
+    oc.FS.createDataFile('/', 'model.step', uint8, true, true, true);
+
+    loadingText.textContent = 'Parsing STEP geometry...';
+    await new Promise(r => setTimeout(r, 50)); // let UI update
+
+    // Read STEP
+    const reader = new oc.STEPControl_Reader_1();
+    const readResult = reader.ReadFile(fileName);
+
+    if (readResult !== oc.IFSelect_ReturnStatus.IFSelect_RetDone) {
+      throw new Error('STEP read failed — check file format');
+    }
+
+    reader.TransferRoots(new oc.Message_ProgressRange_1());
+    const shape = reader.OneShape();
+
+    loadingText.textContent = 'Tessellating mesh...';
+    await new Promise(r => setTimeout(r, 50));
+
+    // Tessellate
+    new oc.BRepMesh_IncrementalMesh_2(shape, 0.1, false, 0.5, false);
+
+    // Clear previous
+    while (mainGroup.children.length) mainGroup.remove(mainGroup.children[0]);
+    currentMeshes = [];
+
+    let totalVerts = 0, totalTris = 0;
+
+    // Extract faces
+    const explorer = new oc.TopExp_Explorer_2(
+      shape,
+      oc.TopAbs_ShapeEnum.TopAbs_FACE,
+      oc.TopAbs_ShapeEnum.TopAbs_SHAPE
+    );
+
+    while (explorer.More()) {
+      const face = oc.TopoDS.Face_1(explorer.Current());
+      const location = new oc.TopLoc_Location_1();
+      const triangulation = oc.BRep_Tool.Triangulation(face, location, 0 /*Poly_MeshPurpose*/);
+
+      if (!triangulation.IsNull()) {
+        const tri = triangulation.get();
+        const nodeCount = tri.NbNodes();
+        const triCount  = tri.NbTriangles();
+
+        const positions = new Float32Array(triCount * 9);
+        const normals   = new Float32Array(triCount * 9);
+
+        const trsf = location.IsIdentity()
+          ? null
+          : location.IsIdentity() ? null : location.IsIdentity() ? null : (() => {
+              const t = new oc.gp_Trsf_1();
+              location.IsIdentity();
+              return location.IsIdentity() ? null : new oc.BRep_TrsType();
+            })();
+
+        const locTrsf = new oc.gp_Trsf_1();
+        location.IsIdentity();
+
+        let idx = 0;
+        for (let t = 1; t <= triCount; t++) {
+          const triangle = tri.Triangle(t);
+          const [n1, n2, n3] = [triangle.Value(1), triangle.Value(2), triangle.Value(3)];
+
+          const nodes = [n1, n2, n3].map(n => {
+            const pt = tri.Node(n);
+            // Apply location transform
+            const gpt = pt.Transformed(location.IsIdentity() ? new oc.gp_Trsf_1() : location.IsIdentity() ? new oc.gp_Trsf_1() : new oc.gp_Trsf_1());
+            return [pt.X(), pt.Y(), pt.Z()];
+          });
+
+          for (const [x, y, z] of nodes) {
+            positions[idx++] = x; positions[idx++] = y; positions[idx++] = z;
+          }
+        }
+
+        totalTris += triCount;
+        totalVerts += nodeCount;
+
+        const geom = new THREE.BufferGeometry();
+        geom.setAttribute('position', new THREE.BufferAttribute(positions.slice(0, idx), 3));
+        geom.computeVertexNormals();
+
+        // Shaded mesh
+        const mat = new THREE.MeshPhongMaterial({
+          color: 0x7ab8d4,
+          specular: 0x334466,
+          shininess: 60,
+          side: THREE.DoubleSide,
+        });
+
+        const mesh = new THREE.Mesh(geom, mat);
+
+        // Wireframe edges
+        const edgesGeom = new THREE.EdgesGeometry(geom, 15);
+        const edgesMat = new THREE.LineBasicMaterial({ color: 0x1a2a3a, linewidth: 1 });
+        const edges = new THREE.LineSegments(edgesGeom, edgesMat);
+
+        const group = new THREE.Group();
+        group.add(mesh);
+        group.add(edges);
+        mainGroup.add(group);
+        currentMeshes.push({ mesh, edges, group });
+      }
+
+      explorer.Next();
+    }
+
+    // Cleanup OC FS
+    oc.FS.unlink(fileName);
+
+    if (currentMeshes.length === 0) {
+      throw new Error('No geometry extracted — file may be empty or unsupported');
+    }
+
+    // Fit view
+    const box = new THREE.Box3().setFromObject(mainGroup);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3()).length();
+
+    panOffset.copy(center);
+    spherical.radius = size * 1.5;
+    updateCamera();
+
+    // Update grid scale
+    scene.children
+      .filter(c => c instanceof THREE.GridHelper)
+      .forEach(g => { scene.remove(g); });
+    const gridSize = size * 2;
+    const grid = new THREE.GridHelper(gridSize, 20, 0x1c2030, 0x1c2030);
+    grid.position.y = box.min.y;
+    scene.add(grid);
+
+    // Update stats
+    document.getElementById('stat-verts').textContent = totalVerts.toLocaleString();
+    document.getElementById('stat-tris').textContent = totalTris.toLocaleString();
+    document.getElementById('stat-file').textContent = file.name;
+    headerInfo.innerHTML = `<span class="name">${file.name}</span> &nbsp;·&nbsp; ${(file.size / 1024).toFixed(1)} KB &nbsp;·&nbsp; ${totalTris.toLocaleString()} triangles`;
+
+    applyRenderMode(renderMode);
+    toolbar.classList.add('visible');
+    controlsPanel.classList.add('visible');
+    dropOverlay.classList.add('hidden');
+    hideLoading();
+
+  } catch (e) {
+    hideLoading();
+    showError('Error: ' + e.message);
+    console.error(e);
+  }
+}
+
+// ─── Render modes ─────────────────────────────────────────────────────────────
+function applyRenderMode(mode) {
+  renderMode = mode;
+  currentMeshes.forEach(({ mesh, edges }) => {
+    if (mode === 'wireframe') {
+      mesh.visible = false;
+      edges.visible = true;
+      edges.material.color.set(0x4df0c0);
+    } else if (mode === 'shaded') {
+      mesh.visible = true;
+      edges.visible = false;
+    } else { // shaded-wire
+      mesh.visible = true;
+      edges.visible = true;
+      edges.material.color.set(0x1a2a3a);
+    }
+  });
+}
+
+// ─── Event wiring ─────────────────────────────────────────────────────────────
+document.getElementById('open-btn').addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => { if (e.target.files[0]) loadSTEP(e.target.files[0]); });
+dropInput.addEventListener('change', e => { if (e.target.files[0]) loadSTEP(e.target.files[0]); });
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f && (f.name.endsWith('.step') || f.name.endsWith('.stp'))) loadSTEP(f);
+  else showError('Only .step and .stp files are supported');
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  spherical = { theta: 0.5, phi: 1.0, radius: spherical.radius };
+  panOffset.set(0, 0, 0);
+  if (currentMeshes.length) {
+    const box = new THREE.Box3().setFromObject(mainGroup);
+    panOffset.copy(box.getCenter(new THREE.Vector3()));
+    spherical.radius = box.getSize(new THREE.Vector3()).length() * 1.5;
+  }
+  updateCamera();
+});
+
+document.getElementById('wireframe-btn').addEventListener('click', () => applyRenderMode('wireframe'));
+document.getElementById('shaded-btn').addEventListener('click', () => applyRenderMode('shaded'));
+document.getElementById('shaded-wire-btn').addEventListener('click', () => applyRenderMode('shaded-wire'));
+document.getElementById('fit-btn').addEventListener('click', () => {
+  if (!currentMeshes.length) return;
+  const box = new THREE.Box3().setFromObject(mainGroup);
+  panOffset.copy(box.getCenter(new THREE.Vector3()));
+  spherical.radius = box.getSize(new THREE.Vector3()).length() * 1.5;
+  updateCamera();
+});
+
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+initThree();
+updateCamera();
+initOC();
+</script>
+</body>
+</html>

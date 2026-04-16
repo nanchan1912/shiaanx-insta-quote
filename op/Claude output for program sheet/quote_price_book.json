@@ -1,0 +1,311 @@
+﻿{
+  "version": "2026-03-24-baseline",
+  "updated_at": "2026-03-24T08:43:10+00:00",
+  "notes": [
+    "Baseline commercial values seeded from manual quote workbook code-ass1.xlsx plus the earlier prototype quote config.",
+    "These are starting values and should be treated as a controlled internal rate card, not as supplier truth."
+  ],
+  "materials": {
+    "mild_steel": {
+      "aliases": [
+        "mild steel",
+        "ms",
+        "low carbon steel"
+      ],
+      "density_g_cm3": 7.85,
+      "price_per_kg": 75,
+      "source": "code-ass1.xlsx manual quote workbook"
+    },
+    "aluminium": {
+      "aliases": [
+        "aluminum",
+        "aluminium 6061",
+        "al6061"
+      ],
+      "density_g_cm3": 2.7,
+      "price_per_kg": 320.0,
+      "source": "existing quote_config baseline"
+    },
+    "stainless_steel": {
+      "aliases": [
+        "stainless steel",
+        "ss",
+        "ss304",
+        "ss316"
+      ],
+      "density_g_cm3": 8.0,
+      "price_per_kg": 260.0,
+      "source": "existing quote_config baseline"
+    }
+  },
+  "process_rates": {
+    "milling_3axis": {
+      "label": "CNC Machining 3-axis",
+      "rate_per_hour": 400.0,
+      "setup_cost_per_setup": {
+        "small": 700.0,
+        "medium": 1000.0,
+        "large": 1500.0,
+        "heavy": 2000.0,
+        "default": 1000.0
+      },
+      "source": "code-ass1.xlsx manual quote workbook"
+    },
+    "turning_cnc": {
+      "label": "CNC Turning",
+      "rate_per_hour": 400.0,
+      "setup_cost_per_setup": {
+        "small": 750.0,
+        "medium": 1000.0,
+        "large": 1500.0,
+        "heavy": 2000.0,
+        "default": 1000.0
+      },
+      "source": "code-ass1.xlsx manual quote workbook"
+    },
+    "grinding": {
+      "label": "Grinding",
+      "rate_per_hour": 500.0,
+      "setup_cost_per_setup": {
+        "small": 375.0,
+        "medium": 500.0,
+        "large": 750.0,
+        "heavy": 1000.0,
+        "default": 500.0
+      },
+      "source": "code-ass1.xlsx manual quote workbook"
+    }
+  },
+  "engineering_rates": {
+    "cam_programming": {
+      "label": "CAM Programming",
+      "rate_per_hour": 700.0,
+      "base_minutes": 8.0,
+      "minutes_per_setup": 4.0,
+      "minutes_per_unique_operation": 1.5,
+      "minutes_per_weighted_feature": 0.35,
+      "source": "internal baseline; intentionally conservative"
+    }
+  },
+  "inspection": {
+    "manual": {
+      "label": "Manual Inspection",
+      "setup_cost": 0.0,
+      "rate_per_hour": 500.0,
+      "base_hours": 1.0,
+      "hours_per_setup": 0.0,
+      "hours_per_feature": 0.0,
+      "minimum_hours": 1.0,
+      "source": "code-ass1.xlsx manual quote workbook"
+    },
+    "cmm": {
+      "label": "CMM Inspection",
+      "setup_cost": 1000.0,
+      "rate_per_hour": 1000.0,
+      "base_hours": 1.0,
+      "hours_per_setup": 0.35,
+      "hours_per_feature": 0.03,
+      "minimum_hours": 1.0,
+      "source": "code-ass1.xlsx manual quote workbook"
+    }
+  },
+  "surface_finishes": {
+    "electroless_nickel_plating": {
+      "label": "Electroless Nickel Plating",
+      "aliases": [
+        "electroless nickel plating",
+        "enp",
+        "nickel plating"
+      ],
+      "metric": "stock_mass_kg",
+      "charge_basis": "per_batch",
+      "tiers": [
+        {
+          "name": "small",
+          "max": 5.0,
+          "cost": 1000.0
+        },
+        {
+          "name": "medium",
+          "max": 15.0,
+          "cost": 2000.0
+        },
+        {
+          "name": "large",
+          "max": 75.0,
+          "cost": 3000.0
+        },
+        {
+          "name": "heavy",
+          "max": null,
+          "cost": 5000.0
+        }
+      ],
+      "source": "code-ass1.xlsx manual quote workbook"
+    },
+    "sandblasting": {
+      "label": "Sandblasting",
+      "aliases": [
+        "sandblasting",
+        "sand blasting"
+      ],
+      "metric": "stock_mass_kg",
+      "charge_basis": "per_batch",
+      "tiers": [
+        {
+          "name": "small",
+          "max": 5.0,
+          "cost": 1000.0
+        },
+        {
+          "name": "medium",
+          "max": 15.0,
+          "cost": 1500.0
+        },
+        {
+          "name": "large",
+          "max": 75.0,
+          "cost": 2000.0
+        },
+        {
+          "name": "heavy",
+          "max": null,
+          "cost": 3000.0
+        }
+      ],
+      "source": "code-ass1.xlsx manual quote workbook"
+    },
+    "white_anodizing": {
+      "label": "White Anodizing",
+      "aliases": [
+        "white anodizing",
+        "white anodising"
+      ],
+      "metric": "stock_mass_kg",
+      "charge_basis": "per_batch",
+      "tiers": [
+        {
+          "name": "small",
+          "max": 15.0,
+          "cost": 1000.0
+        },
+        {
+          "name": "large",
+          "max": null,
+          "cost": 1500.0
+        }
+      ],
+      "source": "code-ass1.xlsx manual quote workbook"
+    },
+    "powdercoating_ral_9005_jet_black": {
+      "label": "Powdercoating RAL 9005 (Jet black)",
+      "aliases": [
+        "powdercoating ral 9005 (jet black)",
+        "powder coating",
+        "powdercoating"
+      ],
+      "metric": "stock_mass_kg",
+      "charge_basis": "per_batch",
+      "tiers": [
+        {
+          "name": "small",
+          "max": 15.0,
+          "cost": 1000.0
+        },
+        {
+          "name": "large",
+          "max": null,
+          "cost": 1500.0
+        }
+      ],
+      "source": "code-ass1.xlsx manual quote workbook"
+    }
+  },
+  "secondary_operations": {
+    "tapping": {
+      "label": "Tapping",
+      "charge_basis": "per_batch",
+      "prices": {
+        "M3": 1500.0,
+        "M4": 1500.0,
+        "M5": 1500.0,
+        "M6": 2000.0,
+        "M8": 2000.0,
+        "M10": 2000.0,
+        "M12": 2500.0,
+        "M16": 3500.0,
+        "M20": 5000.0,
+        "M2025MM": 5000.0,
+        "default": 2000.0
+      },
+      "source": "code-ass1.xlsx manual quote workbook"
+    },
+    "reaming": {
+      "label": "Reaming",
+      "charge_basis": "per_batch",
+      "prices": {
+        "DIA5": 1500.0,
+        "DIA6": 2000.0,
+        "DIA8": 1500.0,
+        "default": 1500.0
+      },
+      "source": "code-ass1.xlsx manual quote workbook"
+    },
+    "welding": {
+      "label": "Welding",
+      "charge_basis": "per_batch",
+      "prices": {
+        "default": 1000.0
+      },
+      "source": "code-ass1.xlsx manual quote workbook"
+    }
+  },
+  "packaging": {
+    "standard_box": {
+      "label": "Packaging",
+      "cost_by_size_class": {
+        "small": 500.0,
+        "medium": 500.0,
+        "large": 2000.0,
+        "heavy": 3000.0,
+        "default": 500.0
+      },
+      "source": "code-ass1.xlsx manual quote workbook"
+    },
+    "wooden_box": {
+      "label": "Packaging",
+      "cost_by_size_class": {
+        "small": 1000.0,
+        "medium": 1500.0,
+        "large": 2500.0,
+        "heavy": 3000.0,
+        "default": 1500.0
+      },
+      "source": "code-ass1.xlsx manual quote workbook"
+    }
+  },
+  "shipping": {
+    "standard_ground": {
+      "label": "Logistics",
+      "cost_by_size_class": {
+        "small": 500.0,
+        "medium": 750.0,
+        "large": 1000.0,
+        "heavy": 3000.0,
+        "default": 500.0
+      },
+      "source": "code-ass1.xlsx manual quote workbook"
+    },
+    "train": {
+      "label": "Logistics",
+      "cost_by_size_class": {
+        "small": 1000.0,
+        "medium": 1500.0,
+        "large": 2000.0,
+        "heavy": 3000.0,
+        "default": 1500.0
+      },
+      "source": "code-ass1.xlsx manual quote workbook"
+    }
+  }
+}

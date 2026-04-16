@@ -1,0 +1,58 @@
+{
+  "quote_version": "1.0",
+  "currency": "INR",
+  "quantity": 1,
+  "material": "aluminium",
+  "confidence": 0.815,
+  "risk_notes": [
+    "Multiple operations are RPM-capped; actual cycle time may drift."
+  ],
+  "signals": {
+    "total_steps": 6,
+    "substitutions": 0,
+    "rpm_capped": 1,
+    "tool_not_found": 0,
+    "deep_peck_ops": 0,
+    "warnings": 0
+  },
+  "time_min": {
+    "cut_time_min": 4.45,
+    "setup_time_min": 20.0,
+    "programming_time_min": 35.0,
+    "qc_time_min": 6.0
+  },
+  "cost_first_piece": {
+    "machining": 133.49,
+    "setup": 400.0,
+    "programming": 816.67,
+    "qc": 80.0,
+    "tooling": 5.34,
+    "material": 1123.2,
+    "overhead": 307.04,
+    "contingency": 106.19,
+    "subtotal": 2971.93
+  },
+  "batch_quote": {
+    "overhead_percent": 12.0,
+    "contingency_percent": 4.15,
+    "margin_percent": 22.0,
+    "batch_total": 3625.76,
+    "unit_price": 3625.76
+  },
+  "material_model": {
+    "density_g_cm3": 2.7,
+    "price_per_kg": 320.0,
+    "part_volume_mm3": 1003141.593,
+    "stock_volume_mm3": 1300000.0,
+    "part_mass_kg": 2.7085,
+    "stock_mass_kg": 3.51,
+    "removed_mass_kg": 0.8015
+  },
+  "rates": {
+    "machine_rate_per_hour": 1800.0,
+    "setup_rate_per_hour": 1200.0,
+    "programming_rate_per_hour": 1400.0,
+    "qc_rate_per_hour": 800.0,
+    "tooling_cost_per_cut_min": 1.2
+  }
+}

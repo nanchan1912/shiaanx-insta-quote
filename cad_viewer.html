@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>3D CAD Viewer</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: #1a1d27;
+    border-bottom: 1px solid #2d3148;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
+  #toolbar h1 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #a78bfa;
+    letter-spacing: 0.02em;
+    margin-right: 4px;
+  }
+
+  .sep { width: 1px; height: 22px; background: #2d3148; }
+
+  label.btn, button.btn {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid #3d4168;
+    background: #232640;
+    color: #c4c9e8;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+  label.btn:hover, button.btn:hover { background: #2e3260; border-color: #5b60a0; }
+  button.btn:disabled { opacity: 0.4; cursor: default; }
+
+  .btn-accent {
+    background: #4c3b9e;
+    border-color: #6d5bc8;
+    color: #e0d9ff;
+  }
+  .btn-accent:hover { background: #5a47b5 !important; }
+
+  #file-input { display: none; }
+
+  #file-name {
+    font-size: 12px;
+    color: #6b7280;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .view-btn.active {
+    background: #4c3b9e;
+    border-color: #6d5bc8;
+    color: #e0d9ff;
+  }
+
+  #canvas-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #renderer-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  #drop-zone {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    pointer-events: none;
+  }
+
+  #drop-zone.hidden { display: none; }
+
+  .drop-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: #232640;
+    border: 2px dashed #3d4168;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+  }
+
+  #drop-zone p {
+    font-size: 14px;
+    color: #6b7280;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  #drop-zone strong { color: #a78bfa; }
+
+  #overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15,17,23,0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #a78bfa;
+    pointer-events: none;
+  }
+
+  #overlay.hidden { display: none; }
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #2d3148;
+    border-top-color: #a78bfa;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #info-panel {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    font-size: 11px;
+    color: #4b5563;
+    line-height: 1.8;
+    pointer-events: none;
+  }
+
+  #stats-panel {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(26,29,39,0.85);
+    border: 1px solid #2d3148;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 11px;
+    color: #9ca3af;
+    line-height: 2;
+    display: none;
+  }
+
+  #stats-panel.visible { display: block; }
+  #stats-panel b { color: #c4c9e8; }
+
+  #error-toast {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #7f1d1d;
+    border: 1px solid #b91c1c;
+    color: #fca5a5;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: none;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <h1>&#9671; CAD Viewer</h1>
+  <div class="sep"></div>
+
+  <label class="btn btn-accent" for="file-input">&#128193; Open File</label>
+  <input type="file" id="file-input" accept=".stl,.obj,.ply" />
+  <span id="file-name">No file loaded</span>
+
+  <div class="sep"></div>
+
+  <button class="btn view-btn active" id="btn-solid" title="Solid view">&#9635; Solid</button>
+  <button class="btn view-btn" id="btn-wire" title="Wireframe view">&#9633; Wire</button>
+  <button class="btn view-btn" id="btn-both" title="Solid + wireframe">&#9678; Both</button>
+
+  <div class="sep"></div>
+
+  <button class="btn" id="btn-reset" title="Reset camera">&#8635; Reset</button>
+  <button class="btn" id="btn-fit" title="Fit to screen">&#8982; Fit</button>
+  <button class="btn" id="btn-stats" title="Toggle stats">&#128202; Stats</button>
+</div>
+
+<div id="canvas-wrap">
+  <canvas id="renderer-canvas"></canvas>
+
+  <div id="drop-zone">
+    <div class="drop-icon">&#128190;</div>
+    <p>Open a <strong>STL</strong>, <strong>OBJ</strong>, or <strong>PLY</strong> file<br/>using the button above</p>
+  </div>
+
+  <div id="overlay" class="hidden">
+    <div class="spinner"></div>
+    <span id="overlay-msg">Loading...</span>
+  </div>
+
+  <div id="stats-panel">
+    <div>Vertices: <b id="st-verts">—</b></div>
+    <div>Faces: <b id="st-faces">—</b></div>
+    <div>Size X: <b id="st-x">—</b></div>
+    <div>Size Y: <b id="st-y">—</b></div>
+    <div>Size Z: <b id="st-z">—</b></div>
+  </div>
+
+  <div id="info-panel">
+    Drag to rotate &nbsp;|&nbsp; Scroll to zoom &nbsp;|&nbsp; Right-drag / middle-drag to pan
+  </div>
+
+  <div id="error-toast" id="error-toast"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ── scene setup ──────────────────────────────────────────────────────────────
+const canvas  = document.getElementById('renderer-canvas');
+const wrap    = document.getElementById('canvas-wrap');
+const dropZ   = document.getElementById('drop-zone');
+const overlay = document.getElementById('overlay');
+const overlayMsg = document.getElementById('overlay-msg');
+const statsPanel = document.getElementById('stats-panel');
+const errorToast = document.getElementById('error-toast');
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setClearColor(0x0f1117);
+renderer.shadowMap.enabled = true;
+
+const scene  = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, 1, 0.001, 10000);
+camera.position.set(0, 0, 5);
+
+// Lights
+const ambient = new THREE.AmbientLight(0xffffff, 0.45);
+scene.add(ambient);
+const dir1 = new THREE.DirectionalLight(0xffffff, 0.85);
+dir1.position.set(1, 2, 3);
+scene.add(dir1);
+const dir2 = new THREE.DirectionalLight(0x8080ff, 0.3);
+dir2.position.set(-2, -1, -2);
+scene.add(dir2);
+
+// Grid
+const grid = new THREE.GridHelper(20, 20, 0x2d3148, 0x1e2035);
+scene.add(grid);
+
+// Current mesh group
+let meshGroup = null;
+let viewMode  = 'solid';
+let statsVisible = false;
+
+// ── resize ───────────────────────────────────────────────────────────────────
+function resize() {
+  const w = wrap.clientWidth, h = wrap.clientHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(wrap);
+resize();
+
+// ── orbit controls (manual) ──────────────────────────────────────────────────
+let mouse = { down: false, button: 0, x: 0, y: 0 };
+let orbit = { theta: 0.4, phi: 1.1, radius: 5, cx: 0, cy: 0, cz: 0 };
+
+function updateCamera() {
+  camera.position.set(
+    orbit.cx + orbit.radius * Math.sin(orbit.phi) * Math.sin(orbit.theta),
+    orbit.cy + orbit.radius * Math.cos(orbit.phi),
+    orbit.cz + orbit.radius * Math.sin(orbit.phi) * Math.cos(orbit.theta)
+  );
+  camera.lookAt(orbit.cx, orbit.cy, orbit.cz);
+}
+updateCamera();
+
+canvas.addEventListener('mousedown', e => {
+  mouse.down = true; mouse.button = e.button;
+  mouse.x = e.clientX; mouse.y = e.clientY;
+  e.preventDefault();
+});
+window.addEventListener('mouseup', () => { mouse.down = false; });
+window.addEventListener('mousemove', e => {
+  if (!mouse.down) return;
+  const dx = e.clientX - mouse.x, dy = e.clientY - mouse.y;
+  mouse.x = e.clientX; mouse.y = e.clientY;
+  if (mouse.button === 0) {
+    orbit.theta -= dx * 0.007;
+    orbit.phi   = Math.max(0.05, Math.min(Math.PI - 0.05, orbit.phi + dy * 0.007));
+  } else {
+    const s = orbit.radius * 0.001;
+    const right = new THREE.Vector3();
+    const up    = new THREE.Vector3();
+    camera.matrix.extractBasis(right, up, new THREE.Vector3());
+    orbit.cx -= right.x * dx * s; orbit.cy -= right.y * dx * s; orbit.cz -= right.z * dx * s;
+    orbit.cx += up.x * dy * s;    orbit.cy += up.y * dy * s;    orbit.cz += up.z * dy * s;
+  }
+  updateCamera();
+});
+canvas.addEventListener('wheel', e => {
+  orbit.radius = Math.max(0.01, orbit.radius * (1 + e.deltaY * 0.001));
+  updateCamera();
+  e.preventDefault();
+}, { passive: false });
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+// Touch support
+let touches = {};
+canvas.addEventListener('touchstart', e => {
+  for (const t of e.changedTouches) touches[t.identifier] = { x: t.clientX, y: t.clientY };
+  e.preventDefault();
+}, { passive: false });
+canvas.addEventListener('touchmove', e => {
+  const ids = Object.keys(touches);
+  if (ids.length === 1) {
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touches[t.identifier].x;
+    const dy = t.clientY - touches[t.identifier].y;
+    orbit.theta -= dx * 0.007;
+    orbit.phi   = Math.max(0.05, Math.min(Math.PI - 0.05, orbit.phi + dy * 0.007));
+    touches[t.identifier] = { x: t.clientX, y: t.clientY };
+  } else if (ids.length === 2) {
+    const t0 = e.touches[0], t1 = e.touches[1];
+    const dist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+    if (touches._pinchDist) orbit.radius = Math.max(0.01, orbit.radius * (touches._pinchDist / dist));
+    touches._pinchDist = dist;
+  }
+  updateCamera();
+  e.preventDefault();
+}, { passive: false });
+canvas.addEventListener('touchend', e => {
+  for (const t of e.changedTouches) delete touches[t.identifier];
+  if (Object.keys(touches).filter(k => k !== '_pinchDist').length < 2) delete touches._pinchDist;
+});
+
+// ── render loop ──────────────────────────────────────────────────────────────
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+animate();
+
+// ── view mode ────────────────────────────────────────────────────────────────
+function applyViewMode() {
+  if (!meshGroup) return;
+  meshGroup.traverse(obj => {
+    if (obj.isMesh) {
+      if (obj.userData.type === 'solid') {
+        obj.visible = viewMode === 'solid' || viewMode === 'both';
+      }
+      if (obj.userData.type === 'wire') {
+        obj.visible = viewMode === 'wire' || viewMode === 'both';
+      }
+    }
+  });
+}
+
+['solid','wire','both'].forEach(m => {
+  document.getElementById('btn-' + m).addEventListener('click', () => {
+    viewMode = m;
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + m).classList.add('active');
+    applyViewMode();
+  });
+});
+
+// ── fit camera ───────────────────────────────────────────────────────────────
+function fitToObject(geometry) {
+  geometry.computeBoundingBox();
+  const box = geometry.boundingBox;
+  const center = new THREE.Vector3();
+  box.getCenter(center);
+  const size = new THREE.Vector3();
+  box.getSize(size);
+  const maxDim = Math.max(size.x, size.y, size.z);
+  const fov = camera.fov * (Math.PI / 180);
+  const dist = (maxDim / 2) / Math.tan(fov / 2) * 1.8;
+
+  orbit.cx = center.x; orbit.cy = center.y; orbit.cz = center.z;
+  orbit.radius = dist;
+  orbit.theta = 0.5; orbit.phi = 1.0;
+  camera.near = dist * 0.001;
+  camera.far  = dist * 100;
+  camera.updateProjectionMatrix();
+  updateCamera();
+
+  // Reposition grid
+  grid.position.y = box.min.y;
+  grid.scale.setScalar(maxDim / 10);
+
+  // Update stats
+  const verts = geometry.attributes.position ? geometry.attributes.position.count : 0;
+  const faces = geometry.index ? geometry.index.count / 3 : verts / 3;
+  document.getElementById('st-verts').textContent = verts.toLocaleString();
+  document.getElementById('st-faces').textContent = Math.round(faces).toLocaleString();
+  document.getElementById('st-x').textContent = size.x.toFixed(3);
+  document.getElementById('st-y').textContent = size.y.toFixed(3);
+  document.getElementById('st-z').textContent = size.z.toFixed(3);
+}
+
+document.getElementById('btn-fit').addEventListener('click', () => {
+  if (!meshGroup) return;
+  const box = new THREE.Box3().setFromObject(meshGroup);
+  const center = new THREE.Vector3(); box.getCenter(center);
+  const size   = new THREE.Vector3(); box.getSize(size);
+  const maxDim = Math.max(size.x, size.y, size.z);
+  const fov = camera.fov * (Math.PI / 180);
+  orbit.cx = center.x; orbit.cy = center.y; orbit.cz = center.z;
+  orbit.radius = (maxDim / 2) / Math.tan(fov / 2) * 1.8;
+  updateCamera();
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  orbit.theta = 0.4; orbit.phi = 1.1;
+  updateCamera();
+});
+
+document.getElementById('btn-stats').addEventListener('click', () => {
+  statsVisible = !statsVisible;
+  statsPanel.classList.toggle('visible', statsVisible);
+});
+
+// ── add mesh to scene ─────────────────────────────────────────────────────────
+function addGeometry(geometry) {
+  if (meshGroup) { scene.remove(meshGroup); meshGroup.traverse(o => { if (o.isMesh) { o.geometry.dispose(); o.material.dispose(); } }); }
+  geometry.computeVertexNormals();
+
+  const solidMat = new THREE.MeshPhongMaterial({
+    color: 0x7c6ccc,
+    specular: 0x404060,
+    shininess: 60,
+    side: THREE.DoubleSide,
+  });
+  const wireMat = new THREE.MeshBasicMaterial({
+    color: 0x5b60a0,
+    wireframe: true,
+    opacity: 0.35,
+    transparent: true,
+  });
+
+  const solidMesh = new THREE.Mesh(geometry, solidMat);
+  solidMesh.userData.type = 'solid';
+  const wireMesh = new THREE.Mesh(geometry, wireMat);
+  wireMesh.userData.type = 'wire';
+
+  meshGroup = new THREE.Group();
+  meshGroup.add(solidMesh, wireMesh);
+  scene.add(meshGroup);
+
+  fitToObject(geometry);
+  applyViewMode();
+  dropZ.classList.add('hidden');
+}
+
+// ── error helper ─────────────────────────────────────────────────────────────
+function showError(msg) {
+  errorToast.textContent = msg;
+  errorToast.style.display = 'block';
+  setTimeout(() => { errorToast.style.display = 'none'; }, 4000);
+}
+
+// ── STL parser ───────────────────────────────────────────────────────────────
+function parseSTL(buffer) {
+  // Detect ASCII vs binary
+  const head = new Uint8Array(buffer, 0, Math.min(256, buffer.byteLength));
+  const text = new TextDecoder().decode(head).trimStart();
+  if (text.startsWith('solid')) {
+    // Try ASCII
+    try { return parseSTLAscii(new TextDecoder().decode(buffer)); } catch(e) {}
+  }
+  return parseSTLBinary(buffer);
+}
+
+function parseSTLBinary(buffer) {
+  const view = new DataView(buffer);
+  const numFaces = view.getUint32(80, true);
+  const positions = new Float32Array(numFaces * 9);
+  const normals   = new Float32Array(numFaces * 9);
+  let offset = 84;
+  for (let i = 0; i < numFaces; i++) {
+    const nx = view.getFloat32(offset, true), ny = view.getFloat32(offset+4, true), nz = view.getFloat32(offset+8, true);
+    offset += 12;
+    for (let v = 0; v < 3; v++) {
+      positions[i*9 + v*3]   = view.getFloat32(offset, true);
+      positions[i*9 + v*3+1] = view.getFloat32(offset+4, true);
+      positions[i*9 + v*3+2] = view.getFloat32(offset+8, true);
+      normals[i*9 + v*3]   = nx; normals[i*9 + v*3+1] = ny; normals[i*9 + v*3+2] = nz;
+      offset += 12;
+    }
+    offset += 2; // attribute byte count
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('normal',   new THREE.BufferAttribute(normals, 3));
+  return geo;
+}
+
+function parseSTLAscii(text) {
+  const positions = [];
+  const re = /vertex\s+([\d.eE+\-]+)\s+([\d.eE+\-]+)\s+([\d.eE+\-]+)/g;
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    positions.push(parseFloat(m[1]), parseFloat(m[2]), parseFloat(m[3]));
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+  return geo;
+}
+
+// ── OBJ parser ───────────────────────────────────────────────────────────────
+function parseOBJ(text) {
+  const verts = [], normals = [], uvs = [];
+  const positions = [], normalData = [];
+  for (const raw of text.split('\n')) {
+    const line = raw.trim();
+    if (line.startsWith('v ')) {
+      const [,x,y,z] = line.split(/\s+/);
+      verts.push(parseFloat(x), parseFloat(y), parseFloat(z));
+    } else if (line.startsWith('vn ')) {
+      const [,x,y,z] = line.split(/\s+/);
+      normals.push(parseFloat(x), parseFloat(y), parseFloat(z));
+    } else if (line.startsWith('f ')) {
+      const parts = line.slice(2).trim().split(/\s+/);
+      const poly = parts.map(p => {
+        const [vi, ti, ni] = p.split('/').map(s => s ? parseInt(s) - 1 : -1);
+        return { vi, ni };
+      });
+      // Triangulate
+      for (let i = 1; i < poly.length - 1; i++) {
+        for (const idx of [0, i, i+1]) {
+          const { vi, ni } = poly[idx];
+          positions.push(verts[vi*3], verts[vi*3+1], verts[vi*3+2]);
+          if (ni >= 0) normalData.push(normals[ni*3], normals[ni*3+1], normals[ni*3+2]);
+        }
+      }
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+  if (normalData.length === positions.length) {
+    geo.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(normalData), 3));
+  }
+  return geo;
+}
+
+// ── PLY parser ────────────────────────────────────────────────────────────────
+function parsePLY(buffer) {
+  const text = new TextDecoder().decode(new Uint8Array(buffer, 0, Math.min(4096, buffer.byteLength)));
+  const lines = text.split('\n');
+  let numVerts = 0, numFaces = 0, headerEnd = 0, isBinary = false, isBigEndian = false;
+  const props = [];
+  for (let i = 0; i < lines.length; i++) {
+    const l = lines[i].trim();
+    if (l.startsWith('format binary_big_endian')) { isBinary = true; isBigEndian = true; }
+    else if (l.startsWith('format binary_little_endian')) { isBinary = true; }
+    else if (l.startsWith('element vertex')) numVerts = parseInt(l.split(/\s+/)[2]);
+    else if (l.startsWith('element face'))  numFaces  = parseInt(l.split(/\s+/)[2]);
+    else if (l.startsWith('property') && !l.includes('list')) props.push(l.split(/\s+/)[2]);
+    else if (l === 'end_header') { headerEnd = i + 1; break; }
+  }
+  if (!isBinary) {
+    // ASCII PLY
+    const dataLines = lines.slice(headerEnd);
+    const xi = props.indexOf('x'), yi = props.indexOf('y'), zi = props.indexOf('z');
+    const vertArray = [];
+    for (let i = 0; i < numVerts; i++) {
+      const parts = dataLines[i].trim().split(/\s+/);
+      vertArray.push(parseFloat(parts[xi]), parseFloat(parts[yi]), parseFloat(parts[zi]));
+    }
+    const positions = [];
+    for (let i = numVerts; i < numVerts + numFaces; i++) {
+      const parts = dataLines[i].trim().split(/\s+/).map(Number);
+      const count = parts[0];
+      for (let t = 1; t < count - 1; t++) {
+        for (const idx of [1, t+1, t+2]) {
+          positions.push(vertArray[parts[idx]*3], vertArray[parts[idx]*3+1], vertArray[parts[idx]*3+2]);
+        }
+      }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+    return geo;
+  }
+  // Binary PLY — compute header byte length
+  const enc = new TextEncoder();
+  const fullText = new TextDecoder().decode(buffer);
+  const headerStr = fullText.split('end_header\n')[0] + 'end_header\n';
+  const headerBytes = enc.encode(headerStr).length;
+  const view = new DataView(buffer);
+  const le = !isBigEndian;
+  // Read vertices (assume float32 x,y,z as first 3 props)
+  const stride = props.length * 4;
+  const vertArray = [];
+  let off = headerBytes;
+  for (let i = 0; i < numVerts; i++) {
+    vertArray.push(view.getFloat32(off, le), view.getFloat32(off+4, le), view.getFloat32(off+8, le));
+    off += stride;
+  }
+  const positions = [];
+  for (let i = 0; i < numFaces; i++) {
+    const count = view.getUint8(off); off++;
+    const idxs = [];
+    for (let j = 0; j < count; j++) { idxs.push(view.getInt32(off, le)); off += 4; }
+    for (let t = 1; t < count - 1; t++) {
+      for (const idx of [0, t, t+1]) {
+        positions.push(vertArray[idxs[idx]*3], vertArray[idxs[idx]*3+1], vertArray[idxs[idx]*3+2]);
+      }
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+  return geo;
+}
+
+// ── file loading ──────────────────────────────────────────────────────────────
+function loadFile(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (!['stl','obj','ply'].includes(ext)) {
+    showError('Unsupported format. Please use STL, OBJ, or PLY.');
+    return;
+  }
+  document.getElementById('file-name').textContent = file.name;
+  overlay.classList.remove('hidden');
+  overlayMsg.textContent = 'Loading ' + file.name + '…';
+
+  const reader = new FileReader();
+
+  if (ext === 'obj') {
+    reader.onload = e => {
+      try {
+        const geo = parseOBJ(e.target.result);
+        if (!geo.attributes.position || geo.attributes.position.count === 0) throw new Error('No geometry found');
+        addGeometry(geo);
+      } catch(err) { showError('Failed to parse OBJ: ' + err.message); }
+      finally { overlay.classList.add('hidden'); }
+    };
+    reader.readAsText(file);
+  } else {
+    reader.onload = e => {
+      try {
+        const geo = ext === 'stl' ? parseSTL(e.target.result) : parsePLY(e.target.result);
+        if (!geo.attributes.position || geo.attributes.position.count === 0) throw new Error('No geometry found');
+        addGeometry(geo);
+      } catch(err) { showError('Failed to parse ' + ext.toUpperCase() + ': ' + err.message); }
+      finally { overlay.classList.add('hidden'); }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+}
+
+document.getElementById('file-input').addEventListener('change', e => {
+  if (e.target.files[0]) loadFile(e.target.files[0]);
+});
+
+// ── drag and drop ─────────────────────────────────────────────────────────────
+wrap.addEventListener('dragover', e => e.preventDefault());
+wrap.addEventListener('drop', e => {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (file) loadFile(file);
+});
+</script>
+</body>
+</html>

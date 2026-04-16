@@ -1,0 +1,60 @@
+{
+  "quote_version": "1.0",
+  "currency": "INR",
+  "quantity": 10,
+  "material": "aluminium",
+  "confidence": 0.682,
+  "risk_notes": [
+    "Non-standard tool substitutions detected.",
+    "Multiple operations are RPM-capped; actual cycle time may drift.",
+    "Deep peck drilling increases cycle-time variability."
+  ],
+  "signals": {
+    "total_steps": 53,
+    "substitutions": 6,
+    "rpm_capped": 50,
+    "tool_not_found": 0,
+    "deep_peck_ops": 2,
+    "warnings": 0
+  },
+  "time_min": {
+    "cut_time_min": 2.5,
+    "setup_time_min": 104.0,
+    "programming_time_min": 115.9,
+    "qc_time_min": 24.0
+  },
+  "cost_first_piece": {
+    "machining": 74.93,
+    "setup": 2080.0,
+    "programming": 2704.33,
+    "qc": 320.0,
+    "tooling": 3.0,
+    "material": 4.07,
+    "overhead": 622.36,
+    "contingency": 414.91,
+    "subtotal": 6223.6
+  },
+  "batch_quote": {
+    "overhead_percent": 12.0,
+    "contingency_percent": 8.0,
+    "margin_percent": 22.0,
+    "batch_total": 12889.57,
+    "unit_price": 1288.96
+  },
+  "material_model": {
+    "density_g_cm3": 2.7,
+    "price_per_kg": 320.0,
+    "part_volume_mm3": 742.027,
+    "stock_volume_mm3": 4709.932,
+    "part_mass_kg": 0.002,
+    "stock_mass_kg": 0.0127,
+    "removed_mass_kg": 0.0107
+  },
+  "rates": {
+    "machine_rate_per_hour": 1800.0,
+    "setup_rate_per_hour": 1200.0,
+    "programming_rate_per_hour": 1400.0,
+    "qc_rate_per_hour": 800.0,
+    "tooling_cost_per_cut_min": 1.2
+  }
+}

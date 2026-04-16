@@ -1,0 +1,57 @@
+{
+  "currency": "INR",
+  "machine_rate_per_hour": {
+    "milling": 1800.0,
+    "turning": 1600.0,
+    "both": 1800.0,
+    "default": 1750.0
+  },
+  "setup_rate_per_hour": 1200.0,
+  "programming_rate_per_hour": 1400.0,
+  "qc_rate_per_hour": 800.0,
+  "qc_time_min_per_setup": 6.0,
+  "default_setup_time_min": 20.0,
+  "angled_setup_extra_min": 12.0,
+  "material": {
+    "aluminium": {
+      "density_g_cm3": 2.7,
+      "price_per_kg": 320.0
+    },
+    "mild_steel": {
+      "density_g_cm3": 7.85,
+      "price_per_kg": 95.0
+    },
+    "stainless_steel": {
+      "density_g_cm3": 8.0,
+      "price_per_kg": 260.0
+    },
+    "default": {
+      "density_g_cm3": 2.7,
+      "price_per_kg": 300.0
+    }
+  },
+  "buy_to_fly_factor": 1.1,
+  "tooling_cost_per_cut_min": {
+    "aluminium": 1.2,
+    "mild_steel": 1.8,
+    "stainless_steel": 2.6,
+    "default": 1.5
+  },
+  "programming": {
+    "base_min": 15.0,
+    "per_cluster_min": 3.0,
+    "feature_type_min": {
+      "through_hole": 0.5,
+      "blind_hole": 0.8,
+      "counterbore": 1.1,
+      "large_bore": 1.4,
+      "boss": 0.9,
+      "planar_face": 0.5,
+      "default": 0.7
+    }
+  },
+  "overhead_percent": 12.0,
+  "target_margin_percent": 22.0,
+  "minimum_order_value": 500.0,
+  "minimum_unit_price": 100.0
+}

@@ -1,0 +1,11 @@
+name: occ
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pythonocc-core=7.8
+  - reportlab
+  - numpy
+  - scipy
+  - networkx
+  - pillow

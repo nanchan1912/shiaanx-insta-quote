@@ -1,0 +1,20 @@
+Demo file: RKSE-004-059.stp
+
+Type these inputs when prompted:
+- STEP file name: RKSE-004-059.stp
+- Quantity: 1
+- Material: AL6061-T6
+- Surface finish: Plating
+- Inspection type: Standard
+- Shipping mode: Standard
+- Packaging type: Standard
+
+Expected quote:
+- Raw material: INR 59
+- Processing / machining: INR 1956
+- Plating: INR 600
+- Internal total / pc: INR 2615
+- Quoted price / pc: INR 2789
+
+Final line to expect:
+- Final answer: Quote for RKSE-004-059 is INR 2789 per piece.

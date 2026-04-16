@@ -1,0 +1,71 @@
+﻿{
+  "currency": "INR",
+  "defaults": {
+    "material": "mild_steel",
+    "inspection_level": "manual",
+    "packaging": "standard_box",
+    "shipping": "standard_ground",
+    "surface_finishes": [],
+    "secondary_operations": [],
+    "minimum_charge": 0.0,
+    "minimum_unit_price": 0.0,
+    "include_overhead_percent": 0.0,
+    "include_profit_percent": 0.0,
+    "include_contingency_percent": 0.0
+  },
+  "feature_type_complexity": {
+    "through_hole": 1.0,
+    "blind_hole": 1.2,
+    "counterbore": 1.4,
+    "large_bore": 1.3,
+    "boss": 1.1,
+    "planar_face": 0.8,
+    "default": 1.0
+  },
+  "stock_rules": {
+    "size_classes": [
+      { "name": "small", "max_stock_mass_kg": 5.0 },
+      { "name": "medium", "max_stock_mass_kg": 15.0 },
+      { "name": "large", "max_stock_mass_kg": 75.0 },
+      { "name": "heavy", "max_stock_mass_kg": null }
+    ],
+    "block": {
+      "pad_mm": { "x": 6.0, "y": 6.0, "z": 4.0 }
+    },
+    "round": {
+      "diameter_pad_mm": 6.0,
+      "length_pad_mm": 6.0
+    }
+  },
+  "process_mapping": {
+    "machine_to_family": {
+      "milling": "milling_3axis",
+      "turning": "turning_cnc",
+      "both": "milling_3axis"
+    },
+    "operation_to_family": {
+      "spot_drill": "milling_3axis",
+      "twist_drill": "milling_3axis",
+      "pilot_drill": "milling_3axis",
+      "micro_drill": "milling_3axis",
+      "core_drill": "milling_3axis",
+      "face_mill": "milling_3axis",
+      "contour_mill": "milling_3axis",
+      "pocket_mill": "milling_3axis",
+      "counterbore_mill": "milling_3axis",
+      "circular_interp": "milling_3axis",
+      "boring_bar": "turning_cnc",
+      "turning_rough": "turning_cnc",
+      "turning_finish": "turning_cnc",
+      "od_turn": "turning_cnc",
+      "id_turn": "turning_cnc",
+      "thread_turn": "turning_cnc",
+      "grind": "grinding"
+    }
+  },
+  "auto_rules": {
+    "choose_round_stock_if_turning_share_ge": 0.35,
+    "cmm_if_setups_ge": 4,
+    "cmm_if_feature_count_ge": 18
+  }
+}

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Insta Quote</title>
+  <style>
+    :root{--bg:#f5f0e8;--panel:rgba(255,252,247,.95);--soft:#fffaf2;--muted:#6d6257;--ink:#1f1b17;--line:rgba(65,50,35,.12);--a:#1b6b5c;--b:#bb5a2a;--c:#d9a441;--shadow:0 20px 45px rgba(59,42,24,.12);--r:22px}
+    *{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Tahoma,Arial,sans-serif;color:var(--ink);background:radial-gradient(circle at top left,rgba(217,164,65,.22),transparent 24rem),radial-gradient(circle at top right,rgba(27,107,92,.15),transparent 22rem),linear-gradient(180deg,#f8f3ec 0%,#f1e8dc 100%);min-height:100vh}input,select,textarea,button{font:inherit}
+    .page{width:min(1320px,calc(100vw - 32px));margin:20px auto;display:grid;gap:18px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+    .hero{display:grid;grid-template-columns:minmax(320px,420px) minmax(0,1fr)}.up,.sum{padding:22px;display:grid;gap:14px}.up{border-right:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,0)),radial-gradient(circle at top left,rgba(187,90,42,.14),transparent 16rem)}.sum{background:linear-gradient(135deg,rgba(27,107,92,.08),transparent 48%)}
+    .ey{margin:0 0 6px;text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;color:var(--a);font-weight:700}h1,h2,h3,h4,p{margin:0}h1{font-size:clamp(1.8rem,2vw,2.4rem)}p{color:var(--muted);line-height:1.45}
+    .drop,.box,.formula,.card{border:1px solid var(--line);border-radius:18px;background:var(--soft)}.drop,.box,.formula{padding:14px}.drop{border-style:dashed;background:rgba(27,107,92,.05)}.drop.active{background:rgba(27,107,92,.11)}.formula{background:rgba(217,164,65,.08)}.code{display:block;margin-top:8px;font-family:Consolas,"Courier New",monospace;font-size:.85rem;white-space:pre-wrap}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}button{border:0;border-radius:999px;padding:11px 16px;cursor:pointer}.pri{background:linear-gradient(135deg,var(--a),#255b8a);color:#fff}.sec{background:rgba(31,27,23,.08)}.del{background:rgba(180,76,54,.12);color:#b44c36}.ghost{padding:8px 12px;background:rgba(31,27,23,.06);color:var(--muted)}
+    .meta,.topg,.grid,.rows,.sumg{display:grid;gap:12px}.meta{grid-template-columns:repeat(4,minmax(120px,1fr))}.topg,.grid.three{grid-template-columns:repeat(4,minmax(0,1fr))}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.rows{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}.sumg{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .stat{padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.62);border:1px solid var(--line)}.stat small{display:block;color:var(--muted);margin-bottom:4px}
+    label{display:grid;gap:6px;font-size:.84rem;color:var(--muted)}input,select,textarea{width:100%;border:1px solid rgba(65,50,35,.18);background:#fffdf9;color:var(--ink);border-radius:12px;padding:11px 12px;outline:none}textarea{min-height:88px;resize:vertical}
+    .stack{display:grid;gap:18px}.secx{padding:20px;display:grid;gap:14px}.head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}.pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:8px 12px;background:rgba(30,123,72,.12);color:#1e7b48;font-size:.88rem;font-weight:700}.note2{font-size:.82rem;color:var(--a);font-weight:700}
+    .card h3,.tcard h3{margin:0}.ch{padding:15px 17px;border-bottom:1px solid var(--line);background:rgba(217,164,65,.08);display:flex;justify-content:space-between;align-items:center;gap:12px}.cb{padding:16px 18px;display:grid;gap:12px}
+    table{width:100%;border-collapse:collapse;font-size:.95rem}th,td{padding:12px 0;text-align:left;border-bottom:1px solid rgba(65,50,35,.1);vertical-align:top}th{color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700}td:last-child,th:last-child{text-align:right}.amt{white-space:nowrap;font-weight:700}.det{color:var(--muted);font-size:.88rem;line-height:1.45;margin-top:4px}.sub td{font-weight:700;color:var(--a)}
+    .dlist{display:grid;gap:12px}.drow{padding:14px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.68);display:grid;gap:12px}.dhead{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .tot{display:grid}.trow{display:grid;grid-template-columns:1fr auto;gap:14px;padding:14px 0;border-bottom:1px solid rgba(65,50,35,.1)}.grand{color:var(--b)}.nlist{display:grid;gap:8px}.n{padding:12px 14px;border-radius:14px;background:rgba(187,90,42,.08);border:1px solid rgba(187,90,42,.16);color:#7e4d35;font-size:.9rem;line-height:1.45}
+    .modal{position:fixed;inset:0;background:rgba(24,19,14,.72);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:18px;z-index:40}.modal.open{display:flex}.vp{width:min(1260px,calc(100vw - 24px));height:min(840px,calc(100vh - 24px));background:var(--panel);border:1px solid var(--line);border-radius:26px;overflow:hidden;display:grid;grid-template-rows:auto 1fr}.vt{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.vb{display:grid;grid-template-columns:minmax(220px,290px) minmax(0,1fr);min-height:0}.vs{border-right:1px solid var(--line);padding:16px;display:grid;gap:12px;align-content:start;overflow:auto}.plist{display:grid;gap:8px}.pbtn{width:100%;text-align:left;border-radius:14px;padding:10px 12px;background:rgba(31,27,23,.05);box-shadow:none}.pbtn.active{background:rgba(27,107,92,.14);color:var(--a)}.can{position:relative;background:linear-gradient(180deg,#f0e7db 0%,#e4d9ca 100%)}#cadCanvas{width:100%;height:100%;display:block}.cstat{position:absolute;left:16px;bottom:16px;max-width:360px;background:rgba(255,250,242,.9);border:1px solid var(--line);border-radius:16px;padding:12px 14px;font-size:.88rem;color:var(--muted);line-height:1.45}
+    .axis-container{position:absolute;right:16px;bottom:16px;width:80px;height:80px;background:rgba(255,250,242,.9);border:1px solid var(--line);border-radius:12px;padding:8px;pointer-events:none;z-index:10}
+    .tooltip{position:absolute;background:rgba(31,27,23,.95);color:#fff;padding:10px 14px;border-radius:8px;font-size:.85rem;pointer-events:none;z-index:20;max-width:280px;display:none;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+    .tooltip strong{display:block;color:var(--c);margin-bottom:4px;font-size:.9rem}
+    .tooltip .dim{opacity:.8;font-size:.8rem;margin-top:2px}
+    @media (max-width:1100px){.hero,.vb,.sumg{grid-template-columns:1fr}.up{border-right:0;border-bottom:1px solid var(--line)}.vs{border-right:0;border-bottom:1px solid var(--line)}.meta,.topg,.grid.three{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:720px){.page{width:min(100vw - 16px,100%);margin:8px auto}.up,.sum,.secx{padding:16px}.meta,.topg,.grid.two,.grid.three,.sumg{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="panel hero">
+      <div class="up">
+        <div>
+          <p class="ey">CAD Upload</p>
+          <h1>CAD Viewer And Quote Demo</h1>
+          <p>Drag a CAD file into the drop zone, then open the separate 3D viewer. Quote values remain demo, but the editors now sit above each section with a formula box under them.</p>
+        </div>
+        <div class="drop" id="dropzone">
+          <strong>Drop STEP / IGES file here</strong>
+          <p>Viewer-supported: `.step`, `.stp`, `.iges`, `.igs`.</p>
+          <div class="actions">
+            <button class="pri" id="browseCadBtn" type="button">Choose CAD File</button>
+            <button class="sec" id="openViewerBtn" type="button">Open Viewer</button>
+            <button class="ghost" id="testPipelineBtn" type="button" title="Test if pipeline server is working">Test Pipeline</button>
+          </div>
+          <input id="cadFileInput" type="file" accept=".step,.stp,.iges,.igs" hidden>
+        </div>
+        <div class="box" id="fileStatus">No CAD file selected.</div>
+        <div class="box" id="pipelineStatus" style="display:none; background:rgba(27,107,92,.08); border-color:rgba(27,107,92,.2);">
+          <strong style="color:var(--a);">Pipeline Status</strong>
+          <div id="pipelineDetails" style="margin-top:8px; font-size:.9rem; color:var(--muted);">Not connected</div>
+        </div>
+        <div class="box">The viewer is separate from the demo pricing data. It loads the uploaded CAD, shows the geometry in 3D, keeps edge divisions visible, and lets you highlight parts from a list or by clicking the model.</div>
+      </div>
+      <div class="sum">
+        <div>
+          <p class="ey">Quote Overview</p>
+          <h2 id="heroPart">Part</h2>
+          <p id="heroFile">No CAD file selected</p>
+        </div>
+        <div class="topg">
+          <label><span>Customer Name</span><input id="customerName" type="text"></label>
+          <label><span>Quote Number</span><input id="quoteNumber" type="text"></label>
+          <label><span>Part Name / Number</span><input id="partName" type="text"></label>
+          <label><span>Quantity</span><input id="quantity" type="number" min="1" step="1"></label>
+          <label><span>Material</span><input id="materialName" type="text"></label>
+          <label><span>Inspection Type</span><select id="inspectionType"><option value="CMM Inspection">CMM Inspection</option><option value="Manual Inspection">Manual Inspection</option></select></label>
+          <label><span>Packaging Type</span><input id="packagingType" type="text"></label>
+          <label><span>Shipping Mode</span><input id="shippingType" type="text"></label>
+        </div>
+        <div class="meta" id="heroMeta"></div>
+        <div class="actions">
+          <button class="pri" id="refreshBtn" type="button">Refresh Quote</button>
+          <button class="sec" id="resetBtn" type="button">Reset Demo Values</button>
+        </div>
+      </div>
+    </section>
+    <main class="stack" id="stack"></main>
+  </div>
+  <div class="modal" id="viewerModal" aria-hidden="true">
+    <div class="vp">
+      <div class="vt">
+        <div><p class="ey">3D Viewer</p><h2 id="viewerTitle">CAD Viewer</h2><p id="viewerSubtitle">Upload a file, then open the viewer.</p></div>
+        <div class="actions"><button class="sec" id="fitViewerBtn" type="button">Fit Model</button><button class="sec" id="resetViewerBtn" type="button">Reset Camera</button><button class="del" id="closeViewerBtn" type="button">Close Viewer</button></div>
+      </div>
+      <div class="vb">
+        <aside class="vs">
+          <div class="box">Click a part below to highlight it. Mouse: left drag to orbit, right drag to pan, scroll to zoom.</div>
+          <div class="box" id="viewerStatus">Viewer idle.</div>
+          <div class="plist" id="partsList"></div>
+        </aside>
+        <div class="can"><canvas id="cadCanvas"></canvas><div class="cstat" id="canvasStatus">Load a CAD file to start the 3D viewer.</div><div class="axis-container" id="axisContainer"></div><div class="tooltip" id="featureTooltip"></div></div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/occt-import-js@0.0.23/dist/occt-import-js.js"></script>
+  <script>
+    // Feature Processing Pipeline Configuration
+    const PIPELINE_SERVER = 'http://localhost:5000';
+    let pipelineProcessing = false;
+    const D={customerName:"",quoteNumber:"",partName:"",quantity:1,materialName:"Mild Steel",inspectionType:"CMM Inspection",packagingType:"Wooden Box",shippingType:"Train",deliveryCity:"",stockMassKg:11.941,partMassKg:7.875,removedMassKg:4.066,stockX:206,stockY:71,stockZ:104,setupCount:1,stepCount:6,cycleTimeMin:4.45,uniqueOperations:3,weightedFeatures:7,featureCount:5,faceMillCount:1,circularInterpCount:1,contourMillCount:4,materialRate:75,machineRate:400,setupTimePerSetupMin:30,setupCostPerMin:25,fixtureCost:0,inspectionBaseHours:1,inspectionPerSetupHours:.35,inspectionPerFeatureHours:.03,inspectionRateCmm:1000,inspectionRateManual:600,packagingCost:1500,shippingCost:1500,miscCost:350,gstPercent:18,notes:"Multiple operations are RPM-capped; actual cycle time may drift."};
+    const FINS=["Electroless Nickel Plating","Sandblasting","White Anodizing","Powdercoating RAL 9005 (Jet black)","Custom Finish"],OPS=["Tapping","Reaming","Welding","Custom Operation"],CUR="INR";
+    
+    // Feature Processing Pipeline Functions
+    async function processStepFileWithPipeline(file, material='mild_steel', qty=1) {
+      if (!file) return null;
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('material', material);
+      formData.append('qty', qty);
+      
+      try {
+        const response = await fetch(`${PIPELINE_SERVER}/process`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Pipeline processing failed');
+        }
+        
+        const result = await response.json();
+        return result.state || null;
+      } catch (err) {
+        console.warn('Pipeline server not available, using local defaults:', err.message);
+        return null;
+      }
+    }
+    
+    function updateStateFromPipeline(pipelineState) {
+      if (!pipelineState) return;
+      
+      // Update all state values from pipeline output
+      Object.keys(pipelineState).forEach(key => {
+        if (key !== 'finishes' && key !== 'secondaryOps' && key !== 'extraCharges') {
+          if (pipelineState[key] !== undefined && pipelineState[key] !== null) {
+            S[key] = pipelineState[key];
+          }
+        }
+      });
+      
+      // Update arrays (finishes, secondaryOps)
+      if (pipelineState.finishes && Array.isArray(pipelineState.finishes)) {
+        S.finishes = pipelineState.finishes;
+      }
+      if (pipelineState.secondaryOps && Array.isArray(pipelineState.secondaryOps)) {
+        S.secondaryOps = pipelineState.secondaryOps;
+      }
+      if (pipelineState.extraCharges && Array.isArray(pipelineState.extraCharges)) {
+        S.extraCharges = pipelineState.extraCharges;
+      }
+      
+      // Set part name from filename if not already set
+      if (cadFile && !S.partName) {
+        S.partName = cadFile.name.replace(/\.[^.]+$/, '');
+      }
+    }
+    
+    async function runFeatureProcessingPipeline() {
+      if (!cadFile || pipelineProcessing) return;
+      
+      pipelineProcessing = true;
+      const statusEl = document.getElementById('fileStatus');
+      const originalText = statusEl.textContent;
+      statusEl.textContent = 'Processing STEP file through feature pipeline...';
+      
+      try {
+        // Run the pipeline
+        const materialSlug = S.materialName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+        const pipelineState = await processStepFileWithPipeline(cadFile, materialSlug, S.quantity);
+        
+        if (pipelineState) {
+          updateStateFromPipeline(pipelineState);
+          statusEl.textContent = `Processed: ${cadFile.name} (Features extracted: ${S.featureCount}, Steps: ${S.stepCount})`;
+          render();
+        } else {
+          statusEl.textContent = `Loaded: ${cadFile.name} (Using default values - pipeline unavailable)`;
+        }
+      } catch (err) {
+        console.error('Pipeline error:', err);
+        statusEl.textContent = `Loaded: ${cadFile.name} (Pipeline error: ${err.message})`;
+      } finally {
+        pipelineProcessing = false;
+      }
+    }
+    
+    // Pipeline Health Check and Testing Functions
+    async function checkPipelineHealth() {
+      const statusBox = document.getElementById('pipelineStatus');
+      const statusDetails = document.getElementById('pipelineDetails');
+      
+      try {
+        const response = await fetch(`${PIPELINE_SERVER}/health`);
+        const data = await response.json();
+        
+        statusBox.style.display = 'block';
+        
+        // Check if all pipeline scripts exist
+        const scripts = data.pipeline_scripts_exist || {};
+        const allScriptsExist = Object.values(scripts).every(v => v);
+        const scriptCount = Object.values(scripts).filter(v => v).length;
+        const totalScripts = Object.keys(scripts).length;
+        
+        if (allScriptsExist && data.occ_available) {
+          statusDetails.innerHTML = `
+            <div style="color:var(--a);font-weight:700;">Pipeline Server Online</div>
+            <div>OCC: ${data.occ_available ? 'Available' : 'Not Available'}</div>
+            <div>Scripts: ${scriptCount}/${totalScripts} ready</div>
+            <div style="margin-top:8px;font-size:.8rem;">Ready to process STEP files</div>
+          `;
+          statusBox.style.background = 'rgba(27,107,92,.08)';
+          statusBox.style.borderColor = 'rgba(27,107,92,.2)';
+        } else if (scriptCount > 0) {
+          statusDetails.innerHTML = `
+            <div style="color:var(--c);font-weight:700;">Pipeline Partially Ready</div>
+            <div>OCC: ${data.occ_available ? 'Available' : 'Not Available'}</div>
+            <div>Scripts: ${scriptCount}/${totalScripts} ready</div>
+            <div style="margin-top:8px;font-size:.8rem;color:#d9a441;">Some pipeline steps may not work</div>
+          `;
+          statusBox.style.background = 'rgba(217,164,65,.08)';
+          statusBox.style.borderColor = 'rgba(217,164,65,.2)';
+        } else {
+          statusDetails.innerHTML = `
+            <div style="color:#b44c36;font-weight:700;">Pipeline Not Ready</div>
+            <div>Scripts: ${scriptCount}/${totalScripts} found</div>
+            <div style="margin-top:8px;font-size:.8rem;">Will use demo data only</div>
+          `;
+          statusBox.style.background = 'rgba(180,76,54,.08)';
+          statusBox.style.borderColor = 'rgba(180,76,54,.2)';
+        }
+      } catch (err) {
+        statusBox.style.display = 'block';
+        statusDetails.innerHTML = `
+          <div style="color:#b44c36;font-weight:700;">Pipeline Server Offline</div>
+          <div style="font-size:.8rem;margin-top:4px;">${err.message}</div>
+          <div style="margin-top:8px;font-size:.8rem;">Start server: <code>start_pipeline_server.bat</code></div>
+        `;
+        statusBox.style.background = 'rgba(180,76,54,.08)';
+        statusBox.style.borderColor = 'rgba(180,76,54,.2)';
+      }
+    }
+    
+    async function testPipelineConnection() {
+      const statusBox = document.getElementById('pipelineStatus');
+      const statusDetails = document.getElementById('pipelineDetails');
+      const btn = document.getElementById('testPipelineBtn');
+      
+      btn.disabled = true;
+      btn.textContent = 'Testing...';
+      statusBox.style.display = 'block';
+      statusDetails.innerHTML = '<div>Running pipeline test...</div>';
+      
+      try {
+        // First check health
+        const healthResponse = await fetch(`${PIPELINE_SERVER}/health`);
+        const healthData = await healthResponse.json();
+        
+        // Then run test endpoint
+        const testResponse = await fetch(`${PIPELINE_SERVER}/test`);
+        const testData = await testResponse.json();
+        
+        if (testData.success) {
+          // Apply the test state to the form
+          if (testData.state) {
+            updateStateFromPipeline(testData.state);
+            render();
+          }
+          
+          statusDetails.innerHTML = `
+            <div style="color:var(--a);font-weight:700;">Pipeline Test Successful!</div>
+            <div>File used: ${testData.demo_file_used}</div>
+            <div>Features: ${testData.state?.featureCount || 'N/A'}, Steps: ${testData.state?.stepCount || 'N/A'}</div>
+            <div style="margin-top:8px;font-size:.8rem;color:var(--a);">Form updated with test data</div>
+          `;
+          statusBox.style.background = 'rgba(27,107,92,.08)';
+          statusBox.style.borderColor = 'rgba(27,107,92,.2)';
+        } else {
+          statusDetails.innerHTML = `
+            <div style="color:#b44c36;font-weight:700;">Pipeline Test Failed</div>
+            <div>${testData.message || 'Unknown error'}</div>
+          `;
+        }
+      } catch (err) {
+        statusDetails.innerHTML = `
+          <div style="color:#b44c36;font-weight:700;">Pipeline Test Failed</div>
+          <div>${err.message}</div>
+          <div style="margin-top:8px;font-size:.8rem;">Make sure the server is running</div>
+        `;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Test Pipeline';
+      }
+    }
+    
+    let S=initState(),cadFile=null,occtP=null,R=null,SC=null,CAM=null,CTL=null,ROOT=null,parts=[],sel=null,loadedSig="",loadedRaw=null;
+    function initState(){return{...D,finishes:[{type:"Electroless Nickel Plating",name:"Electroless Nickel Plating",cost:2000},{type:"Sandblasting",name:"Sandblasting",cost:1500}],secondaryOps:[{type:"Tapping",name:"Tapping M6",spec:"M6",count:1,unitCost:2000},{type:"Reaming",name:"Reaming Dia 8",spec:"Dia 8",count:1,unitCost:1500}],extraCharges:[]}}
+    const $=id=>document.getElementById(id),num=v=>{v=parseFloat(v);return Number.isFinite(v)?v:0},esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"),money=v=>new Intl.NumberFormat("en-IN",{style:"currency",currency:CUR,maximumFractionDigits:2}).format(v||0),fx=(v,d=2)=>Number(v||0).toFixed(d),dt=()=>new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});
+    function sz(m){return m<=5?"small":m<=15?"medium":m<=75?"large":"heavy"}
+    function syncTop(){["customerName","quoteNumber","partName","quantity","materialName","inspectionType","packagingType","shippingType"].forEach(k=>{const e=$(k);if(e&&String(e.value)!==String(S[k]))e.value=S[k]})}
+    function fHtml(c){const v=S[c.k]??"";if(c.t==="select")return `<label><span>${c.l}</span><select data-bind="${c.k}">${c.o.map(o=>`<option value="${esc(o)}" ${String(o)===String(v)?"selected":""}>${esc(o)}</option>`).join("")}</select></label>`;return `<label><span>${c.l}</span><input data-bind="${c.k}" type="${c.t||"number"}" value="${esc(v)}" ${c.min!==undefined?`min="${c.min}"`:""} ${c.step!==undefined?`step="${c.step}"`:""}></label>`}
+    function aHtml(arr,i,c,v){if(c.t==="select")return `<label><span>${c.l}</span><select data-array="${arr}" data-index="${i}" data-key="${c.k}">${c.o.map(o=>`<option value="${esc(o)}" ${String(o)===String(v)?"selected":""}>${esc(o)}</option>`).join("")}</select></label>`;return `<label><span>${c.l}</span><input data-array="${arr}" data-index="${i}" data-key="${c.k}" type="${c.t||"number"}" value="${esc(v)}" ${c.min!==undefined?`min="${c.min}"`:""} ${c.step!==undefined?`step="${c.step}"`:""}></label>`}
+    function table(t,s,rows,sub){return `<div class="card"><div class="ch"><div><h3>${esc(t)}</h3><small>${esc(s)}</small></div><strong>${money(sub)}</strong></div><div class="cb"><table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong>${esc(r.label)}</strong><div class="det">${r.detail}</div></td><td class="amt">${money(r.amount)}</td></tr>`).join("")}<tr class="sub"><td>Section subtotal</td><td>${money(sub)}</td></tr></tbody></table></div></div>`}
+    function data(){const q=Math.max(1,Math.round(num(S.quantity))),sc=sz(num(S.stockMassKg)),mat=num(S.stockMassKg)*q*num(S.materialRate),run=num(S.cycleTimeMin)/60*num(S.machineRate)*q,setupMin=num(S.setupCount)*num(S.setupTimePerSetupMin),setc=setupMin*num(S.setupCostPerMin),fixture=num(S.fixtureCost),mach=run+setc+fixture,inspectionRate=S.inspectionType==="Manual Inspection"?num(S.inspectionRateManual):num(S.inspectionRateCmm),ih=num(S.inspectionBaseHours)+num(S.setupCount)*num(S.inspectionPerSetupHours)+num(S.featureCount)*num(S.inspectionPerFeatureHours),ic=ih*inspectionRate,fr=S.finishes.map(x=>({...x,cost:num(x.cost)})),sr=S.secondaryOps.map(x=>({...x,count:num(x.count),unitCost:num(x.unitCost),total:num(x.count)*num(x.unitCost)})),xr=S.extraCharges.map(x=>({...x,cost:num(x.cost)})),post=fr.reduce((a,b)=>a+b.cost,0)+sr.reduce((a,b)=>a+b.total,0),log=num(S.packagingCost)+num(S.shippingCost)+num(S.miscCost)+xr.reduce((a,b)=>a+b.cost,0),pre=mat+mach+ic+post+log,g=pre*num(S.gstPercent)/100,gt=pre+g;return {...JSON.parse(JSON.stringify(S)),quantity:q,sizeClass:sc,materialCost:mat,machiningRunCost:run,setupMinutes:setupMin,machiningSetupCost:setc,fixtureCost:fixture,machiningCost:mach,inspectionRateApplied:inspectionRate,inspectionHours:ih,inspectionCost:ic,finishRows:fr,secondaryRows:sr,extraChargeRows:xr,postProcessingCost:post,logisticsCost:log,directSubtotal:pre,preTaxTotal:pre,gstCost:g,grandTotal:gt,unitPrice:gt/q}}
+    function render(){syncTop();const d=data(),fn=cadFile?cadFile.name:"",part=d.partName||(fn?fn.replace(/\.[^.]+$/,""):"Part");$("heroPart").textContent=part;$("heroFile").textContent=fn?`CAD file: ${fn}`:"CAD file not selected";$("fileStatus").textContent=fn?`Selected file: ${fn}`:"No CAD file selected.";$("heroMeta").innerHTML=`<div class="stat"><small>Quote No.</small><strong>${esc(d.quoteNumber||"-")}</strong></div><div class="stat"><small>Customer</small><strong>${esc(d.customerName||"-")}</strong></div><div class="stat"><small>Date</small><strong>${dt()}</strong></div><div class="stat"><small>Grand Total</small><strong>${money(d.grandTotal)}</strong></div>`;
+      const matRows=[{label:`Raw material for ${d.materialName}`,detail:`Stock mass ${fx(d.stockMassKg,3)} kg x qty ${d.quantity} x rate ${money(d.materialRate)}/kg = ${money(d.materialCost)}. Stock size ${fx(d.stockX,1)} x ${fx(d.stockY,1)} x ${fx(d.stockZ,1)} mm. Part mass ${fx(d.partMassKg,3)} kg. Removed mass ${fx(d.removedMassKg,3)} kg per part.`,amount:d.materialCost}];
+      const machRows=[{label:"Machine running cost",detail:`Cycle time ${fx(d.cycleTimeMin)} min = ${fx(d.cycleTimeMin/60,3)} hr. ${fx(d.cycleTimeMin/60,3)} hr x ${money(d.machineRate)}/hr x qty ${d.quantity} = ${money(d.machiningRunCost)}.`,amount:d.machiningRunCost},{label:"Setup cost",detail:`Setup time = ${d.setupCount} setups x ${fx(d.setupTimePerSetupMin)} min/setup = ${fx(d.setupMinutes)} min. ${fx(d.setupMinutes)} min x ${money(d.setupCostPerMin)}/min = ${money(d.machiningSetupCost)}.`,amount:d.machiningSetupCost},{label:"Fixture cost",detail:`Fixture cost from the CAD / process estimate. Editable override = ${money(d.fixtureCost)}.`,amount:d.fixtureCost},{label:"Operations reference",detail:`Face mill ${d.faceMillCount}, circular interp ${d.circularInterpCount}, contour mill ${d.contourMillCount}, total steps ${d.stepCount}.`,amount:0}];
+      const inspRows=[{label:d.inspectionType,detail:`Hours = base ${fx(d.inspectionBaseHours)} + setup (${d.setupCount} x ${fx(d.inspectionPerSetupHours)}) + features (${d.featureCount} x ${fx(d.inspectionPerFeatureHours)}). Total ${fx(d.inspectionHours,3)} hr. Cost = ${fx(d.inspectionHours,3)} hr x ${money(d.inspectionRateApplied)}/hr = ${money(d.inspectionCost)}.`,amount:d.inspectionCost}];
+      const postRows=[];d.finishRows.forEach(x=>{if(x.name&&x.cost>0)postRows.push({label:x.name,detail:`Finish charge = ${money(x.cost)}.`,amount:x.cost})});d.secondaryRows.forEach(x=>{if(x.name&&x.total>0)postRows.push({label:x.name,detail:`Count ${fx(x.count,2)} x ${money(x.unitCost)} = ${money(x.total)}.`,amount:x.total})});if(!postRows.length)postRows.push({label:"No post-processing",detail:"No finish or secondary operation.",amount:0});
+      const logRows=[{label:d.packagingType||"Packaging",detail:`Packaging = ${money(d.packagingCost)}.`,amount:num(d.packagingCost)},{label:d.shippingType||"Shipping",detail:`Shipping = ${money(d.shippingCost)}${d.deliveryCity?` to ${esc(d.deliveryCity)}`:""}.`,amount:num(d.shippingCost)},{label:"Documentation / handling",detail:`Handling and other charges = ${money(d.miscCost)}.`,amount:num(d.miscCost)},...d.extraChargeRows.map(x=>({label:x.name||"Extra charge",detail:x.note?esc(x.note):`Manual extra charge = ${money(x.cost)}.`,amount:x.cost}))];
+      const comRows=[{label:"Pre-tax subtotal",detail:`Material + machining + inspection + post processing + logistics = ${money(d.preTaxTotal)}. Programming, overhead, contingency, margin, and discount are not included.`,amount:d.preTaxTotal},{label:"GST / tax",detail:`${fx(d.gstPercent)}% x ${money(d.preTaxTotal)} = ${money(d.gstCost)}.`,amount:d.gstCost}];
+      const finEd=S.finishes.map((x,i)=>`<div class="drow"><div class="dhead"><strong>Finish ${i+1}</strong><button class="ghost" data-action="remove-array-item" data-array="finishes" data-index="${i}" type="button">Delete</button></div><div class="rows">${aHtml("finishes",i,{k:"type",l:"Finish Type",t:"select",o:FINS},x.type)}${aHtml("finishes",i,{k:"name",l:"Display Name",t:"text"},x.name)}${aHtml("finishes",i,{k:"cost",l:"Cost (INR)",t:"number",min:0,step:.01},x.cost)}</div></div>`).join("");
+      const opEd=S.secondaryOps.map((x,i)=>`<div class="drow"><div class="dhead"><strong>Secondary Operation ${i+1}</strong><button class="ghost" data-action="remove-array-item" data-array="secondaryOps" data-index="${i}" type="button">Delete</button></div><div class="rows">${aHtml("secondaryOps",i,{k:"type",l:"Operation Type",t:"select",o:OPS},x.type)}${aHtml("secondaryOps",i,{k:"name",l:"Display Name",t:"text"},x.name)}${aHtml("secondaryOps",i,{k:"spec",l:"Spec / Size",t:"text"},x.spec)}${aHtml("secondaryOps",i,{k:"count",l:"Count",t:"number",min:0,step:.01},x.count)}${aHtml("secondaryOps",i,{k:"unitCost",l:"Unit Cost (INR)",t:"number",min:0,step:.01},x.unitCost)}</div></div>`).join("");
+      const exEd=S.extraCharges.length?S.extraCharges.map((x,i)=>`<div class="drow"><div class="dhead"><strong>Extra Charge ${i+1}</strong><button class="ghost" data-action="remove-array-item" data-array="extraCharges" data-index="${i}" type="button">Delete</button></div><div class="rows">${aHtml("extraCharges",i,{k:"name",l:"Charge Name",t:"text"},x.name)}${aHtml("extraCharges",i,{k:"cost",l:"Cost (INR)",t:"number",min:0,step:.01},x.cost)}${aHtml("extraCharges",i,{k:"note",l:"Note",t:"text"},x.note)}</div></div>`).join(""):`<div class="box">No extra logistics charges added yet.</div>`;
+      $("stack").innerHTML=`<section class="panel secx"><div class="head"><div><p class="ey">Summary</p><h2>Quote Snapshot</h2><span>Each output section now has its own editor block above it.</span></div><div class="pill">${d.quantity} pc | ${esc(d.sizeClass)} | ${money(d.unitPrice)}/pc</div></div><div class="sumg"><div class="card"><div class="ch"><div><h3>Input Summary</h3><small>Linked demo values</small></div></div><div class="cb"><div><small>Part</small><div>${esc(part)}</div></div><div><small>Material</small><div>${esc(d.materialName)}</div></div><div><small>Inspection</small><div>${esc(d.inspectionType)}</div></div><div><small>Packaging / Shipping</small><div>${esc(d.packagingType)} / ${esc(d.shippingType)}</div></div></div></div><div class="card"><div class="ch"><div><h3>Interaction Changes</h3><small>Requested UX updates</small></div></div><div class="cb"><div>Editors moved above each section.</div><div>Formula box added under each editor.</div><div>Finishes and editable charge rows can be added or deleted.</div><div>Repeated fields stay synced everywhere.</div></div></div></div></section>
+      <section class="panel secx"><div class="head"><div><p class="ey">Section 1</p><h2>Material</h2><span>Material inputs are directly above the material section now.</span></div><div class="note2">Quantity here is shared with totals and machining.</div></div><div class="box"><h4>Edit Material Inputs</h4><div class="grid three">${fHtml({k:"quantity",l:"Quantity",t:"number",min:1,step:1})}${fHtml({k:"materialName",l:"Material",t:"text"})}${fHtml({k:"materialRate",l:"Material Rate (INR/kg)",t:"number",min:0,step:.01})}${fHtml({k:"stockMassKg",l:"Stock Mass / Part (kg)",t:"number",min:0,step:.001})}${fHtml({k:"partMassKg",l:"Part Mass / Part (kg)",t:"number",min:0,step:.001})}${fHtml({k:"removedMassKg",l:"Removed Mass / Part (kg)",t:"number",min:0,step:.001})}${fHtml({k:"stockX",l:"Stock X (mm)",t:"number",min:0,step:.1})}${fHtml({k:"stockY",l:"Stock Y (mm)",t:"number",min:0,step:.1})}${fHtml({k:"stockZ",l:"Stock Z (mm)",t:"number",min:0,step:.1})}</div></div><div class="formula"><strong>Formula Box</strong><span class="code">Material Cost = Stock Mass / Part x Quantity x Material Rate
+Stock Size Display = X x Y x Z (mm)</span></div>${table("Material","Raw material",matRows,d.materialCost)}</section>
+      <section class="panel secx"><div class="head"><div><p class="ey">Section 2</p><h2>Machining</h2><span>Cycle, setup time, and fixture controls live with the machining output.</span></div><div class="note2">Setup count is shared with inspection.</div></div><div class="box"><h4>Edit Machining Inputs</h4><div class="grid three">${fHtml({k:"quantity",l:"Quantity",t:"number",min:1,step:1})}${fHtml({k:"cycleTimeMin",l:"Cycle Time (min)",t:"number",min:0,step:.01})}${fHtml({k:"machineRate",l:"Machine Rate (INR/hr)",t:"number",min:0,step:.01})}${fHtml({k:"setupCount",l:"Setup Count",t:"number",min:1,step:1})}${fHtml({k:"setupTimePerSetupMin",l:"Time / Setup (min)",t:"number",min:0,step:.01})}${fHtml({k:"setupCostPerMin",l:"Setup Cost / Min (INR)",t:"number",min:0,step:.01})}${fHtml({k:"fixtureCost",l:"Fixture Cost (INR)",t:"number",min:0,step:.01})}${fHtml({k:"stepCount",l:"Step Count",t:"number",min:0,step:1})}${fHtml({k:"faceMillCount",l:"Face Mill Ops",t:"number",min:0,step:1})}${fHtml({k:"circularInterpCount",l:"Circular Interp Ops",t:"number",min:0,step:1})}${fHtml({k:"contourMillCount",l:"Contour Mill Ops",t:"number",min:0,step:1})}</div></div><div class="formula"><strong>Formula Box</strong><span class="code">Machine Running Cost = (Cycle Time / 60) x Machine Rate x Quantity
+Setup Cost = Setup Count x Time / Setup x Setup Cost / Min
+Machining Cost = Machine Running Cost + Setup Cost + Fixture Cost</span></div>${table("Machining","Cycle, setup, and fixture",machRows,d.machiningCost)}</section>
+      <section class="panel secx"><div class="head"><div><p class="ey">Section 3</p><h2>Inspection</h2><span>Inspection cost now depends only on hours and the selected process rate.</span></div><div class="note2">CMM and manual inspection use separate editable rates.</div></div><div class="box"><h4>Edit Inspection Inputs</h4><div class="grid three">${fHtml({k:"inspectionType",l:"Inspection Type",t:"select",o:["CMM Inspection","Manual Inspection"]})}${fHtml({k:"setupCount",l:"Setup Count",t:"number",min:1,step:1})}${fHtml({k:"featureCount",l:"Feature Count",t:"number",min:0,step:1})}${fHtml({k:"inspectionBaseHours",l:"Inspection Base Hours",t:"number",min:0,step:.01})}${fHtml({k:"inspectionPerSetupHours",l:"Inspection Hours / Setup",t:"number",min:0,step:.01})}${fHtml({k:"inspectionPerFeatureHours",l:"Inspection Hours / Feature",t:"number",min:0,step:.01})}${fHtml({k:"inspectionRateCmm",l:"CMM Rate (INR/hr)",t:"number",min:0,step:.01})}${fHtml({k:"inspectionRateManual",l:"Manual Rate (INR/hr)",t:"number",min:0,step:.01})}</div></div><div class="formula"><strong>Formula Box</strong><span class="code">Inspection Hours = Base Hours + (Setup Count x Hours / Setup) + (Feature Count x Hours / Feature)
+Inspection Cost = Inspection Hours x Selected Inspection Rate</span></div>${table("Inspection","Inspection hours and process rate",inspRows,d.inspectionCost)}</section>
+      <section class="panel secx"><div class="head"><div><p class="ey">Section 4</p><h2>Post Processing</h2><span>Finishes and secondary operations can now be added and deleted.</span></div><div class="note2">Core bill sections stay fixed, these rows are editable.</div></div><div class="box"><h4>Edit Finishes</h4><div class="dlist">${finEd}</div><div class="actions"><button class="sec" data-action="add-finish" type="button">Add Finish</button></div></div><div class="box"><h4>Edit Secondary Operations</h4><div class="dlist">${opEd}</div><div class="actions"><button class="sec" data-action="add-secondary-op" type="button">Add Secondary Operation</button></div></div><div class="formula"><strong>Formula Box</strong><span class="code">Post Processing Cost = Sum(Finish Cost) + Sum(Operation Count x Operation Unit Cost)</span></div>${table("Post Processing","Finishes and secondary operations",postRows,d.postProcessingCost)}</section>
+      <section class="panel secx"><div class="head"><div><p class="ey">Section 5</p><h2>Logistics And Miscellaneous</h2><span>Packaging and shipping remain core, while extra rows can be added below them.</span></div></div><div class="box"><h4>Edit Logistics Inputs</h4><div class="grid three">${fHtml({k:"packagingType",l:"Packaging Type",t:"text"})}${fHtml({k:"packagingCost",l:"Packaging Cost (INR)",t:"number",min:0,step:.01})}${fHtml({k:"shippingType",l:"Shipping Mode",t:"text"})}${fHtml({k:"shippingCost",l:"Shipping Cost (INR)",t:"number",min:0,step:.01})}${fHtml({k:"deliveryCity",l:"Delivery City",t:"text"})}${fHtml({k:"miscCost",l:"Documentation / Handling (INR)",t:"number",min:0,step:.01})}</div></div><div class="box"><h4>Additional Editable Charges</h4><div class="dlist">${exEd}</div><div class="actions"><button class="sec" data-action="add-extra-charge" type="button">Add Extra Charge</button></div></div><div class="formula"><strong>Formula Box</strong><span class="code">Logistics Cost = Packaging Cost + Shipping Cost + Documentation / Handling + Sum(Extra Charges)</span></div>${table("Logistics","Packaging, shipping, handling, extras",logRows,d.logisticsCost)}</section>
+      <section class="panel secx"><div class="head"><div><p class="ey">Section 6</p><h2>Totals</h2><span>Only the pre-tax subtotal and GST remain at the end.</span></div><div class="pill">${money(d.grandTotal)}</div></div><div class="box"><h4>Edit Total Inputs</h4><div class="grid three">${fHtml({k:"quantity",l:"Quantity",t:"number",min:1,step:1})}${fHtml({k:"gstPercent",l:"GST / Tax %",t:"number",min:0,step:.01})}</div></div><div class="formula"><strong>Formula Box</strong><span class="code">Pre-Tax Total = Material + Machining + Inspection + Post Processing + Logistics
+Grand Total = Pre-Tax Total + (Pre-Tax Total x GST %)
+Unit Price = Grand Total / Quantity</span></div>${table("Totals","Pre-tax subtotal and GST",comRows,d.grandTotal)}<div class="card"><div class="ch"><div><h3>Total Summary</h3><small>Final pricing view</small></div><strong>${money(d.grandTotal)}</strong></div><div class="cb tot"><div class="trow"><div><strong>Pre-tax total</strong><div class="det">Programming, overhead, contingency, margin, and discount are excluded.</div></div><div class="amt">${money(d.preTaxTotal)}</div></div><div class="trow"><div><strong>GST / tax</strong><div class="det">${fx(d.gstPercent)}% x ${money(d.preTaxTotal)} = ${money(d.gstCost)}</div></div><div class="amt">${money(d.gstCost)}</div></div><div class="trow"><div><strong class="grand">Grand total</strong><div class="det">Final amount.</div></div><div class="amt grand">${money(d.grandTotal)}</div></div><div class="trow"><div><strong>Unit price</strong><div class="det">Grand total / qty ${d.quantity}.</div></div><div class="amt">${money(d.unitPrice)}</div></div></div></div></section>
+      <section class="panel secx"><div class="head"><div><p class="ey">Section 7</p><h2>Notes And Assumptions</h2><span>This stays with the output section instead of the old side panel.</span></div></div><div class="box"><h4>Edit Notes</h4><label><span>Notes For Bill</span><textarea data-bind="notes">${esc(d.notes)}</textarea></label></div><div class="formula"><strong>Formula Box</strong><span class="code">This section is descriptive only. It does not change the numeric formula chain.</span></div><div class="card"><div class="ch"><div><h3>Notes And Assumptions</h3><small>Quote notes</small></div></div><div class="cb nlist"><div class="n">${esc(d.notes||"No notes.")}</div></div></div></section>`}
+    function resetState(){S=initState();cadFile=null;loadedSig="";loadedRaw=null;$("cadFileInput").value="";closeViewer();render()}
+    function updArr(arr,i,k,v){const r=S[arr]?.[i];if(!r)return;r[k]=v;if(arr==="finishes"&&k==="type")r.name=v==="Custom Finish"?r.name:v;if(arr==="secondaryOps"&&k==="type")r.name=v==="Custom Operation"?r.name:`${v}${r.spec?` ${r.spec}`:""}`.trim()}
+    function bindEvents(){["customerName","quoteNumber","partName","quantity","materialName","inspectionType","packagingType","shippingType"].forEach(id=>{["input","change"].forEach(ev=>$(id).addEventListener(ev,e=>{S[id]=e.target.type==="number"?num(e.target.value):e.target.value;render()}))});$("stack").addEventListener("input",e=>{const t=e.target;if(t.dataset.bind){S[t.dataset.bind]=t.type==="number"?num(t.value):t.value;render()}else if(t.dataset.array){updArr(t.dataset.array,Number(t.dataset.index),t.dataset.key,t.type==="number"?num(t.value):t.value);render()}});$("stack").addEventListener("change",e=>{const t=e.target;if(t.dataset.bind){S[t.dataset.bind]=t.type==="number"?num(t.value):t.value;render()}else if(t.dataset.array){updArr(t.dataset.array,Number(t.dataset.index),t.dataset.key,t.type==="number"?num(t.value):t.value);render()}});$("stack").addEventListener("click",e=>{const b=e.target.closest("button[data-action]");if(!b)return;const a=b.dataset.action;if(a==="add-finish")S.finishes.push({type:"Custom Finish",name:"Custom Finish",cost:0});if(a==="add-secondary-op")S.secondaryOps.push({type:"Custom Operation",name:"Custom Operation",spec:"",count:1,unitCost:0});if(a==="add-extra-charge")S.extraCharges.push({name:"Extra Charge",cost:0,note:""});if(a==="remove-array-item"&&Array.isArray(S[b.dataset.array]))S[b.dataset.array].splice(Number(b.dataset.index),1);render()})}
+    async function setCad(f) {
+      if (!f) {
+        console.log("setCad called with no file");
+        return;
+      }
+      console.log("Setting CAD file:",f.name,"Size:",f.size,"Type:",f.type);
+      cadFile = f;
+      if (!S.partName) S.partName = f.name.replace(/\.[^.]+$/, '');
+      $("fileStatus").textContent = `File loaded: ${f.name} (${(f.size/1024).toFixed(1)} KB). Click "Open Viewer" to view 3D model.`;
+      
+      // Trigger the feature processing pipeline
+      await runFeatureProcessingPipeline();
+      
+      render();
+    }
+    function msg(m){$("viewerStatus").textContent=m;$("canvasStatus").textContent=m}
+    async function ensureOcct(){if(window.THREE&&window.occtimportjs){if(!occtP)occtP=window.occtimportjs();return occtP}throw new Error("CAD viewer libraries did not load. Open this page through a local HTTP server and make sure internet/CDN access is available, or vendor the libraries locally.")}
+    class FallbackOrbitControls{
+      constructor(camera,dom){
+        this.object=camera;this.domElement=dom;this.target=new THREE.Vector3();this.enableDamping=true;this.dampingFactor=.12;
+        this.rotateSpeed=.008;this.zoomSpeed=.0015;this.panSpeed=.0025;this.state=null;this.spherical=new THREE.Spherical();
+        this.sphericalDelta={theta:0,phi:0};this.panOffset=new THREE.Vector3();this.zoomScale=1;
+        this._ptr=null;this._bind();
+      }
+      _bind(){
+        this._onDown=e=>{e.preventDefault();this.domElement.setPointerCapture?.(e.pointerId);this._ptr=e.pointerId;this.lastX=e.clientX;this.lastY=e.clientY;this.state=(e.button===2||e.ctrlKey||e.shiftKey)?"pan":"rotate"};
+        this._onMove=e=>{if(this.state===null)return;const dx=e.clientX-this.lastX,dy=e.clientY-this.lastY;this.lastX=e.clientX;this.lastY=e.clientY;if(this.state==="rotate"){this.sphericalDelta.theta-=dx*this.rotateSpeed;this.sphericalDelta.phi-=dy*this.rotateSpeed}else{const off=this.object.position.clone().sub(this.target),dist=Math.max(off.length(),1),panX=-dx*this.panSpeed*dist,panY=dy*this.panSpeed*dist,dir=new THREE.Vector3();this.object.getWorldDirection(dir);const right=new THREE.Vector3().crossVectors(dir,this.object.up).normalize(),up=this.object.up.clone().normalize();this.panOffset.add(right.multiplyScalar(panX));this.panOffset.add(up.multiplyScalar(panY))}};
+        this._onUp=e=>{if(this._ptr!==null)this.domElement.releasePointerCapture?.(e.pointerId);this._ptr=null;this.state=null};
+        this._onWheel=e=>{e.preventDefault();const s=Math.exp(e.deltaY*this.zoomSpeed);this.zoomScale*=s};
+        this._onContext=e=>e.preventDefault();
+        this.domElement.addEventListener("pointerdown",this._onDown);
+        this.domElement.addEventListener("pointermove",this._onMove);
+        this.domElement.addEventListener("pointerup",this._onUp);
+        this.domElement.addEventListener("pointerleave",this._onUp);
+        this.domElement.addEventListener("wheel",this._onWheel,{passive:false});
+        this.domElement.addEventListener("contextmenu",this._onContext);
+      }
+      update(){
+        const off=this.object.position.clone().sub(this.target);
+        this.spherical.setFromVector3(off);
+        this.spherical.theta+=this.sphericalDelta.theta;
+        this.spherical.phi+=this.sphericalDelta.phi;
+        this.spherical.phi=Math.max(.001,Math.min(Math.PI-.001,this.spherical.phi));
+        this.spherical.radius=Math.max(.1,this.spherical.radius*this.zoomScale);
+        this.target.add(this.panOffset);
+        off.setFromSpherical(this.spherical);
+        this.object.position.copy(this.target).add(off);
+        this.object.lookAt(this.target);
+        if(this.enableDamping){
+          this.sphericalDelta.theta*=1-this.dampingFactor;
+          this.sphericalDelta.phi*=1-this.dampingFactor;
+          this.panOffset.multiplyScalar(1-this.dampingFactor);
+          this.zoomScale+= (1-this.zoomScale)*this.dampingFactor;
+        }else{
+          this.sphericalDelta.theta=0;this.sphericalDelta.phi=0;this.panOffset.set(0,0,0);this.zoomScale=1;
+        }
+      }
+    }
+    function makeControls(camera,dom){
+      if(window.THREE&&typeof THREE.OrbitControls==="function")return new THREE.OrbitControls(camera,dom);
+      return new FallbackOrbitControls(camera,dom);
+    }
+    let axisHelper=null,axisCam=null,axisRenderer=null,axisScene=null;
+    function initViewer(){const cv=$("cadCanvas");if(!cv){msg("Canvas element not found");return}if(!R){R=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});R.setPixelRatio(Math.min(devicePixelRatio||1,2))}if(!SC){SC=new THREE.Scene()}if(!CAM){CAM=new THREE.PerspectiveCamera(45,1,.1,1e4);CAM.position.set(180,140,200)}if(!CTL){CTL=makeControls(CAM,cv);CTL.enableDamping=true}if(!SC.children.length){SC.add(new THREE.AmbientLight(16777215,1));const k=new THREE.DirectionalLight(16777215,1.2),f=new THREE.DirectionalLight(16048320,.6);k.position.set(140,180,120);f.position.set(-100,90,-80);SC.add(k,f)}if(!ROOT){ROOT=new THREE.Group();SC.add(ROOT)}if(!cv.dataset.viewerBound){cv.addEventListener("click",pick);cv.addEventListener("mousemove",hover);cv.dataset.viewerBound="1"}if(!window._viewerResized){window._viewerResized=true;addEventListener("resize",resizeV)}initAxisHelper();if(!window._viewerLoop){window._viewerLoop=true;(function loop(){requestAnimationFrame(loop);resizeV();CTL&&CTL.update();R&&SC&&CAM&&R.render(SC,CAM);updateAxisHelper()})()}}
+    function initAxisHelper(){const ac=$("axisContainer");if(!ac||axisRenderer)return;axisScene=new THREE.Scene();axisCam=new THREE.PerspectiveCamera(50,1,.1,100);axisCam.position.set(2,2,2);axisCam.lookAt(0,0,0);axisRenderer=new THREE.WebGLRenderer({alpha:true,antialias:true});axisRenderer.setSize(ac.clientWidth,ac.clientHeight);axisRenderer.setPixelRatio(Math.min(devicePixelRatio||1,2));ac.appendChild(axisRenderer.domElement);const a=1.2,ax=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0),new THREE.Vector3(a,0,0)]),ay=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0),new THREE.Vector3(0,a,0)]),az=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0),new THREE.Vector3(0,0,a)]);const mx=new THREE.Line(ax,new THREE.LineBasicMaterial({color:0xff3333,linewidth:2})),my=new THREE.Line(ay,new THREE.LineBasicMaterial({color:0x33ff33,linewidth:2})),mz=new THREE.Line(az,new THREE.LineBasicMaterial({color:0x3333ff,linewidth:2}));axisHelper=new THREE.Group();axisHelper.add(mx,my,mz);const ls=.15,lc=new THREE.Color(0x444444),cs=[[lc,ls,ls,0],[lc,-ls,ls,0],[lc,ls,-ls,0],[lc,-ls,-ls,0],[lc,0,ls,ls],[lc,0,ls,-ls],[lc,0,-ls,ls],[lc,0,-ls,-ls]];cs.forEach(c=>{const l=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(c[1],c[2],c[3]),new THREE.Vector3(c[1]*3,c[2]*3,c[3]*3)]);axisHelper.add(new THREE.Line(l,new THREE.LineBasicMaterial({color:c[0]})))});axisScene.add(axisHelper);const cl=document.createElement("div");cl.style.cssText="position:absolute;bottom:4px;left:4px;font-size:10px;color:#666;font-family:monospace";cl.innerHTML="<span style='color:#f33'>X</span> <span style='color:#3f3'>Y</span> <span style='color:#33f'>Z</span>";ac.appendChild(cl)}
+    function updateAxisHelper(){if(!axisHelper||!axisCam||!axisRenderer||!axisScene||!CAM)return;axisHelper.quaternion.copy(CAM.quaternion);axisRenderer.render(axisScene,axisCam)}
+    let lastHover=null,hoverDebounce=null;
+    function hover(e){if(!CAM||!ROOT||!ROOT.children.length)return;clearTimeout(hoverDebounce);hoverDebounce=setTimeout(()=>{const r=$("cadCanvas").getBoundingClientRect(),m=new THREE.Vector2(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1),rc=new THREE.Raycaster();rc.setFromCamera(m,CAM);const hit=rc.intersectObjects(ROOT.children.filter(x=>x.isMesh),false);const tt=$("featureTooltip");if(!hit.length){tt.style.display="none";lastHover=null;return}const mesh=hit[0].object,idx=mesh.userData.meshIndex,p=parts.find(x=>x.meshIndices.includes(idx));if(lastHover===mesh)return;lastHover=mesh;let html=`<strong>${p?esc(p.label):`Part ${idx+1}`}</strong>`;if(mesh.userData.bbox){const b=mesh.userData.boxs||mesh.userData.bbox;const sx=Math.abs(b.max.x-b.min.x).toFixed(2),sy=Math.abs(b.max.y-b.min.y).toFixed(2),sz=Math.abs(b.max.z-b.min.z).toFixed(2);html+=`<div class="dim">Dimensions: ${sx} x ${sy} x ${sz} mm</div>`}if(mesh.userData.area)html+=`<div class="dim">Surface Area: ${mesh.userData.area.toFixed(2)} mm²</div>`;if(mesh.userData.volume)html+=`<div class="dim">Volume: ${mesh.userData.volume.toFixed(2)} mm³</div>`;if(featureData&&featureData.features){const f=featureData.features.find(x=>x.mesh_index===idx);if(f){html+=`<div class="dim" style="color:var(--c);margin-top:6px;"><strong>Feature: ${esc(f.classification||"Unknown")}</strong></div>`;if(f.radius)html+=`<div class="dim">Radius: ${f.radius.toFixed(2)} mm</div>`;if(f.depth)html+=`<div class="dim">Depth: ${f.depth.toFixed(2)} mm</div>`;if(f.axis)html+=`<div class="dim">Axis: ${esc(f.axis.join(", "))}</div>`}}tt.innerHTML=html;tt.style.display="block";const cx=e.clientX-r.left+20,cy=e.clientY-r.top+20;tt.style.left=Math.min(cx,r.width-300)+"px";tt.style.top=Math.min(cy,r.height-100)+"px"},16)};
+    function resizeV(){if(!R||!CAM)return;const s=$("cadCanvas").parentElement,w=s.clientWidth,h=s.clientHeight;CAM.aspect=Math.max(w,1)/Math.max(h,1);CAM.updateProjectionMatrix();R.setSize(w,h,false)}
+    function clr(){parts=[];sel=null;$("partsList").innerHTML="";if(!ROOT)return;while(ROOT.children.length){const c=ROOT.children[0];ROOT.remove(c);c.geometry&&c.geometry.dispose();if(c.material){Array.isArray(c.material)?c.material.forEach(m=>m.dispose()):c.material.dispose()}}}
+    function col(c){if(!c)return new THREE.Color(0x9c8a73);return new THREE.Color(c.r>1?c.r/255:c.r,c.g>1?c.g/255:c.g,c.b>1?c.b/255:c.b)}
+    function geo(m){const g=new THREE.BufferGeometry(),a=m.attributes||{};if(a.position&&a.position.array)g.setAttribute("position",new THREE.Float32BufferAttribute(a.position.array,a.position.itemSize||3));if(a.normal&&a.normal.array)g.setAttribute("normal",new THREE.Float32BufferAttribute(a.normal.array,a.normal.itemSize||3));if(m.index&&m.index.array)g.setIndex(m.index.array);if(!g.getAttribute("normal"))g.computeVertexNormals();g.computeBoundingBox();g.computeBoundingSphere();return g}
+    function flat(n,p=[]){if(!n)return[];const nm=n.name||`Node ${p.length+1}`,np=[...p,nm];let out=[];if(Array.isArray(n.meshes)&&n.meshes.length)out.push({label:np.join(" / "),meshIndices:n.meshes.slice()});(n.children||[]).forEach(c=>out=out.concat(flat(c,np)));return out}
+    function showParts(){$("partsList").innerHTML=parts.map((p,i)=>`<button class="pbtn ${sel===i?"active":""}" data-part-index="${i}" type="button">${esc(p.label)}</button>`).join("")}
+    function selectPart(i){
+      sel=i;
+      const set=i===null?null:new Set(parts[i]?.meshIndices||[]);
+      ROOT.children.forEach(c=>{
+        if(!c.isMesh)return;
+        const on=!set||set.has(c.userData.meshIndex);
+        c.material.color.copy(on?c.userData.hi:c.userData.base);
+        c.material.emissive.setHex(on&&set?0x1b6b5c:0);
+        c.material.emissiveIntensity=(on&&set)?0.18:0;
+        c.material.opacity=!set||on?1:0.18;
+        c.material.transparent=!!set;
+        if(c.userData.edge)c.userData.edge.material.opacity=(!set||on)?0.36:0.08;
+      });
+      showParts();
+    }
+    function fit(){if(!ROOT||!ROOT.children.length)return;const b=new THREE.Box3().setFromObject(ROOT),s=b.getSize(new THREE.Vector3()),c=b.getCenter(new THREE.Vector3()),m=Math.max(s.x,s.y,s.z,1),d=m*1.8;CAM.position.set(c.x+d,c.y+d*.65,c.z+d);CTL.target.copy(c);CTL.update()}
+    function pick(e){if(!CAM||!ROOT)return;const r=$("cadCanvas").getBoundingClientRect(),m=new THREE.Vector2(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1),rc=new THREE.Raycaster();rc.setFromCamera(m,CAM);const hit=rc.intersectObjects(ROOT.children.filter(x=>x.isMesh),false);if(!hit.length)return selectPart(null);const idx=hit[0].object.userData.meshIndex,p=parts.findIndex(x=>x.meshIndices.includes(idx));selectPart(p>=0?p:null)}
+    let featureData=null;
+    function build(raw){if(!ROOT){msg("Viewer not initialized");return}clr();const meshes=raw.meshes||[];parts=flat(raw.root);if(!parts.length)parts=meshes.map((_,i)=>({label:`Part ${i+1}`,meshIndices:[i]}));meshes.forEach((m,i)=>{const g=geo(m),base=col(m.color);g.computeBoundingBox();const box=g.boundingBox;const area=g.attributes.position?g.attributes.position.count/3*100:0;const volume=computeVolume(g);const mat=new THREE.MeshStandardMaterial({color:base.clone(),metalness:.08,roughness:.7,side:THREE.DoubleSide}),mesh=new THREE.Mesh(g,mat);mesh.userData={meshIndex:i,base:base.clone(),hi:new THREE.Color(0xd9864f),bbox:box,boxs:{min:{x:box.min.x,y:box.min.y,z:box.min.z},max:{x:box.max.x,y:box.max.y,z:box.max.z}},area:area,volume:volume};const edge=new THREE.LineSegments(new THREE.EdgesGeometry(g,25),new THREE.LineBasicMaterial({color:0x5f6a74,transparent:true,opacity:.36}));mesh.userData.edge=edge;ROOT.add(mesh);ROOT.add(edge)});showParts();selectPart(null);fit();msg(`Loaded ${meshes.length} mesh part${meshes.length===1?"":"s"}.`);$("viewerSubtitle").textContent=`${meshes.length} mesh part${meshes.length===1?"":"s"} loaded from ${cadFile.name}.`}
+    function computeVolume(geometry){if(!geometry.attributes.position)return 0;const pos=geometry.attributes.position.array;let vol=0;for(let i=0;i<pos.length;i+=9){const ax=pos[i],ay=pos[i+1],az=pos[i+2],bx=pos[i+3],by=pos[i+4],bz=pos[i+5],cx=pos[i+6],cy=pos[i+7],cz=pos[i+8];vol+=((ax*(by-cz)+bx*(cz-ay)+cx*(ay-by))+(ay*(bz-cx)+by*(cx-az)+cy*(az-bz))+(az*(bx-cy)+bz*(cy-ax)+cz*(ax-by)))/6}return Math.abs(vol)}
+    async function loadViewer(){console.log("loadViewer called, cadFile:",cadFile);if(!cadFile){msg("Choose a CAD file first.");console.error("No cadFile set");return}initViewer();const sig=`${cadFile.name}-${cadFile.size}-${cadFile.lastModified}`;$("viewerTitle").textContent=cadFile.name;$("viewerSubtitle").textContent=`File: ${cadFile.name} (${(cadFile.size/1024).toFixed(1)} KB)`;if(sig===loadedSig&&loadedRaw){console.log("Using cached model data");return build(loadedRaw)}msg("Loading CAD file...");console.log("Reading file:",cadFile.name);try{const occt=await ensureOcct(),ext=cadFile.name.split(".").pop().toLowerCase(),bytes=new Uint8Array(await cadFile.arrayBuffer());console.log("File read, bytes length:",bytes.length);let raw;if(ext==="step"||ext==="stp"){console.log("Parsing STEP file...");raw=occt.ReadStepFile(bytes,null)}else if(ext==="iges"||ext==="igs"){console.log("Parsing IGES file...");raw=occt.ReadIgesFile(bytes,null)}else throw new Error("This viewer currently supports STEP and IGES files.");if(!raw||raw.success===false)throw new Error(raw&&raw.error?raw.error:"CAD import failed.");if(!Array.isArray(raw.meshes)||raw.meshes.length===0)throw new Error("The CAD import completed but returned no displayable meshes.");console.log("Parsed, meshes count:",raw.meshes?raw.meshes.length:0);loadedSig=sig;loadedRaw=raw;build(raw)}catch(err){console.error("Viewer error:",err);msg(`Viewer error: ${err.message}`)}}
+    function openViewer(){$("viewerModal").classList.add("open");$("viewerModal").setAttribute("aria-hidden","false");console.log("Opening viewer, cadFile:",cadFile);loadViewer()}
+    function closeViewer(){$("viewerModal").classList.remove("open");$("viewerModal").setAttribute("aria-hidden","true")}
+    function wireUpload(){const dz=$("dropzone"),fi=$("cadFileInput");$("browseCadBtn").addEventListener("click",()=>fi.click());fi.addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];console.log("File input change:",f?f.name:"none");f&&setCad(f)});["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("active")}));["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove("active")}));dz.addEventListener("drop",e=>{const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];console.log("Drop on dropzone:",f?f.name:"none");f&&setCad(f)});
+      // Add drag-drop to viewer modal canvas
+      const canvas=$("cadCanvas");
+      if(canvas){["dragenter","dragover"].forEach(ev=>canvas.addEventListener(ev,e=>{e.preventDefault();canvas.style.boxShadow="inset 0 0 20px rgba(27,107,92,.5)"}));["dragleave","drop"].forEach(ev=>canvas.addEventListener(ev,e=>{e.preventDefault();canvas.style.boxShadow=""}));canvas.addEventListener("drop",e=>{const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];console.log("Drop on canvas:",f?f.name:"none");if(f){setCad(f);$("viewerTitle").textContent=f.name;loadViewer()}})}
+    }
+    function wireViewer(){$("openViewerBtn").addEventListener("click",openViewer);$("closeViewerBtn").addEventListener("click",closeViewer);$("fitViewerBtn").addEventListener("click",fit);$("resetViewerBtn").addEventListener("click",()=>{selectPart(null);fit()});$("viewerModal").addEventListener("click",e=>{if(e.target===$("viewerModal"))closeViewer()});$("partsList").addEventListener("click",e=>{const b=e.target.closest("[data-part-index]");if(b)selectPart(Number(b.dataset.partIndex))})}
+    $("refreshBtn").addEventListener("click",render);$("resetBtn").addEventListener("click",resetState);$("testPipelineBtn").addEventListener("click",testPipelineConnection);
+    bindEvents();wireUpload();wireViewer();render();checkPipelineHealth();
+  </script>
+</body>
+</html>

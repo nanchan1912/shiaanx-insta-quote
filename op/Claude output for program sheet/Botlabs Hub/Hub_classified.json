@@ -1,0 +1,651 @@
+{
+  "clusters": [
+    {
+      "cluster_id": 0,
+      "seed_face_index": 0,
+      "seed_type": "bore",
+      "face_indices": [
+        0,
+        89
+      ],
+      "face_count": 2,
+      "feature_axis": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "depth": 1.8563,
+      "radii": [
+        0.9
+      ],
+      "is_principal_axis": true,
+      "feature_type": "through_hole",
+      "confidence": "high"
+    },
+    {
+      "cluster_id": 1,
+      "seed_face_index": 2,
+      "seed_type": "bore",
+      "face_indices": [
+        1,
+        2,
+        5,
+        78,
+        79,
+        84,
+        85,
+        86,
+        87
+      ],
+      "face_count": 9,
+      "feature_axis": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "depth": 8.0,
+      "radii": [
+        0.63,
+        1.4,
+        1.8
+      ],
+      "is_principal_axis": true,
+      "feature_type": "counterbore",
+      "confidence": "high"
+    },
+    {
+      "cluster_id": 2,
+      "seed_face_index": 4,
+      "seed_type": "bore",
+      "face_indices": [
+        3,
+        4,
+        6,
+        76,
+        77,
+        80,
+        81,
+        82,
+        83
+      ],
+      "face_count": 9,
+      "feature_axis": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "depth": 8.0,
+      "radii": [
+        0.63,
+        1.4,
+        1.8
+      ],
+      "is_principal_axis": true,
+      "feature_type": "counterbore",
+      "confidence": "high"
+    },
+    {
+      "cluster_id": 3,
+      "seed_face_index": 7,
+      "seed_type": "bore",
+      "face_indices": [
+        7,
+        73
+      ],
+      "face_count": 2,
+      "feature_axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "depth": 1.0,
+      "radii": [
+        0.63
+      ],
+      "is_principal_axis": true,
+      "feature_type": "through_hole",
+      "confidence": "high"
+    },
+    {
+      "cluster_id": 4,
+      "seed_face_index": 8,
+      "seed_type": "bore",
+      "face_indices": [
+        8,
+        70
+      ],
+      "face_count": 2,
+      "feature_axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "depth": 1.0,
+      "radii": [
+        0.63
+      ],
+      "is_principal_axis": true,
+      "feature_type": "through_hole",
+      "confidence": "high"
+    },
+    {
+      "cluster_id": 5,
+      "seed_face_index": 9,
+      "seed_type": "bore",
+      "face_indices": [
+        9,
+        64
+      ],
+      "face_count": 2,
+      "feature_axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "depth": 0.5,
+      "radii": [
+        1.5
+      ],
+      "is_principal_axis": true,
+      "feature_type": "through_hole",
+      "confidence": "high"
+    },
+    {
+      "cluster_id": 6,
+      "seed_face_index": 10,
+      "seed_type": "bore",
+      "face_indices": [
+        10,
+        60
+      ],
+      "face_count": 2,
+      "feature_axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "depth": 0.5,
+      "radii": [
+        1.5
+      ],
+      "is_principal_axis": true,
+      "feature_type": "through_hole",
+      "confidence": "high"
+    },
+    {
+      "cluster_id": 7,
+      "seed_face_index": 14,
+      "seed_type": "bore",
+      "face_indices": [
+        14,
+        18,
+        19,
+        48
+      ],
+      "face_count": 4,
+      "feature_axis": [
+        -0.679909785245089,
+        0.0,
+        -0.7332957683827018
+      ],
+      "depth": 2.1,
+      "radii": [
+        0.63,
+        1.0
+      ],
+      "is_principal_axis": false,
+      "feature_type": "counterbore_angled",
+      "confidence": "high"
+    },
+    {
+      "cluster_id": 8,
+      "seed_face_index": 15,
+      "seed_type": "bore",
+      "face_indices": [
+        15,
+        17,
+        39,
+        47
+      ],
+      "face_count": 4,
+      "feature_axis": [
+        0.679909785245089,
+        0.0,
+        -0.7332957683827018
+      ],
+      "depth": 2.1,
+      "radii": [
+        0.63,
+        1.0
+      ],
+      "is_principal_axis": false,
+      "feature_type": "counterbore_angled",
+      "confidence": "high"
+    },
+    {
+      "cluster_id": 9,
+      "seed_face_index": 16,
+      "seed_type": "bore",
+      "face_indices": [
+        16,
+        42
+      ],
+      "face_count": 2,
+      "feature_axis": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "depth": 1.0,
+      "radii": [
+        0.8
+      ],
+      "is_principal_axis": true,
+      "feature_type": "through_hole",
+      "confidence": "high"
+    },
+    {
+      "cluster_id": 10,
+      "seed_face_index": 41,
+      "seed_type": "bore",
+      "face_indices": [
+        41
+      ],
+      "face_count": 1,
+      "feature_axis": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "depth": 2.0437,
+      "radii": [
+        0.6
+      ],
+      "is_principal_axis": true,
+      "feature_type": "blind_hole",
+      "confidence": "low"
+    },
+    {
+      "cluster_id": 11,
+      "seed_face_index": 43,
+      "seed_type": "bore",
+      "face_indices": [
+        43
+      ],
+      "face_count": 1,
+      "feature_axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "depth": 1.95,
+      "radii": [
+        1.0
+      ],
+      "is_principal_axis": true,
+      "feature_type": "blind_hole",
+      "confidence": "low"
+    },
+    {
+      "cluster_id": 12,
+      "seed_face_index": 44,
+      "seed_type": "bore",
+      "face_indices": [
+        44
+      ],
+      "face_count": 1,
+      "feature_axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "depth": 1.95,
+      "radii": [
+        1.0
+      ],
+      "is_principal_axis": true,
+      "feature_type": "blind_hole",
+      "confidence": "low"
+    },
+    {
+      "cluster_id": 13,
+      "seed_face_index": 45,
+      "seed_type": "bore",
+      "face_indices": [
+        45
+      ],
+      "face_count": 1,
+      "feature_axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "depth": 1.95,
+      "radii": [
+        1.0
+      ],
+      "is_principal_axis": true,
+      "feature_type": "blind_hole",
+      "confidence": "low"
+    },
+    {
+      "cluster_id": 14,
+      "seed_face_index": 46,
+      "seed_type": "bore",
+      "face_indices": [
+        46
+      ],
+      "face_count": 1,
+      "feature_axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "depth": 1.95,
+      "radii": [
+        1.0
+      ],
+      "is_principal_axis": true,
+      "feature_type": "blind_hole",
+      "confidence": "low"
+    },
+    {
+      "cluster_id": 15,
+      "seed_face_index": 50,
+      "seed_type": "bore",
+      "face_indices": [
+        13,
+        22,
+        23,
+        29,
+        30,
+        31,
+        49,
+        50,
+        52,
+        54,
+        56,
+        58,
+        59
+      ],
+      "face_count": 13,
+      "feature_axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "depth": 0.6612,
+      "radii": [
+        20.65,
+        21.85,
+        22.9
+      ],
+      "is_principal_axis": true,
+      "feature_type": "large_bore",
+      "confidence": "high"
+    },
+    {
+      "cluster_id": 16,
+      "seed_face_index": 62,
+      "seed_type": "bore",
+      "face_indices": [
+        62
+      ],
+      "face_count": 1,
+      "feature_axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "depth": 0.5,
+      "radii": [
+        1.5
+      ],
+      "is_principal_axis": true,
+      "feature_type": "through_hole",
+      "confidence": "medium"
+    },
+    {
+      "cluster_id": 17,
+      "seed_face_index": 66,
+      "seed_type": "bore",
+      "face_indices": [
+        66
+      ],
+      "face_count": 1,
+      "feature_axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "depth": 0.5,
+      "radii": [
+        1.5
+      ],
+      "is_principal_axis": true,
+      "feature_type": "through_hole",
+      "confidence": "medium"
+    },
+    {
+      "cluster_id": 18,
+      "seed_face_index": 74,
+      "seed_type": "bore",
+      "face_indices": [
+        74
+      ],
+      "face_count": 1,
+      "feature_axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "depth": 0.2949,
+      "radii": [
+        1.0
+      ],
+      "is_principal_axis": true,
+      "feature_type": "through_hole",
+      "confidence": "medium"
+    },
+    {
+      "cluster_id": 19,
+      "seed_face_index": 75,
+      "seed_type": "bore",
+      "face_indices": [
+        75
+      ],
+      "face_count": 1,
+      "feature_axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "depth": 0.2949,
+      "radii": [
+        1.0
+      ],
+      "is_principal_axis": true,
+      "feature_type": "through_hole",
+      "confidence": "medium"
+    },
+    {
+      "cluster_id": 20,
+      "seed_face_index": 11,
+      "seed_type": "boss",
+      "face_indices": [
+        11,
+        57
+      ],
+      "face_count": 2,
+      "feature_axis": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "depth": 0.6,
+      "radii": [
+        0.6
+      ],
+      "is_principal_axis": true,
+      "feature_type": "boss",
+      "confidence": "high"
+    },
+    {
+      "cluster_id": 21,
+      "seed_face_index": 12,
+      "seed_type": "boss",
+      "face_indices": [
+        12,
+        53
+      ],
+      "face_count": 2,
+      "feature_axis": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "depth": 0.6,
+      "radii": [
+        0.6
+      ],
+      "is_principal_axis": true,
+      "feature_type": "boss",
+      "confidence": "high"
+    },
+    {
+      "cluster_id": 22,
+      "seed_face_index": 51,
+      "seed_type": "boss",
+      "face_indices": [
+        51
+      ],
+      "face_count": 1,
+      "feature_axis": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "depth": 0.6,
+      "radii": [
+        0.6
+      ],
+      "is_principal_axis": true,
+      "feature_type": "boss",
+      "confidence": "high"
+    },
+    {
+      "cluster_id": 23,
+      "seed_face_index": 55,
+      "seed_type": "boss",
+      "face_indices": [
+        55
+      ],
+      "face_count": 1,
+      "feature_axis": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "depth": 0.6,
+      "radii": [
+        0.6
+      ],
+      "is_principal_axis": true,
+      "feature_type": "boss",
+      "confidence": "high"
+    },
+    {
+      "cluster_id": 24,
+      "seed_face_index": 68,
+      "seed_type": "boss",
+      "face_indices": [
+        68,
+        69
+      ],
+      "face_count": 2,
+      "feature_axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "depth": 0.4139,
+      "radii": [
+        2.231
+      ],
+      "is_principal_axis": true,
+      "feature_type": "boss",
+      "confidence": "high"
+    },
+    {
+      "cluster_id": 25,
+      "seed_face_index": 71,
+      "seed_type": "boss",
+      "face_indices": [
+        71,
+        72
+      ],
+      "face_count": 2,
+      "feature_axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "depth": 0.4139,
+      "radii": [
+        2.231
+      ],
+      "is_principal_axis": true,
+      "feature_type": "boss",
+      "confidence": "high"
+    },
+    {
+      "cluster_id": 26,
+      "seed_face_index": 90,
+      "seed_type": "plane",
+      "face_indices": [
+        90
+      ],
+      "face_count": 1,
+      "feature_axis": null,
+      "depth": null,
+      "radii": [],
+      "is_principal_axis": null,
+      "feature_type": "planar_face",
+      "confidence": "high"
+    },
+    {
+      "cluster_id": 27,
+      "seed_face_index": null,
+      "seed_type": "background",
+      "face_indices": [
+        20,
+        21,
+        24,
+        25,
+        26,
+        27,
+        28,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        40,
+        61,
+        63,
+        65,
+        67,
+        88
+      ],
+      "feature_axis": null,
+      "depth": null,
+      "radii": [],
+      "is_principal_axis": null,
+      "face_count": 20,
+      "feature_type": "background",
+      "confidence": "high"
+    }
+  ]
+}
