@@ -386,15 +386,15 @@ def quote_to_state(quote_data: dict) -> dict:
         'materialName': material.replace('_', ' ').title() if isinstance(material, str) else 'Mild Steel',
         
         # Material rates and masses
-        'stockMassKg': stock.get('stock_mass_kg', 11.941),
-        'partMassKg': stock.get('part_mass_kg', 7.875),
-        'removedMassKg': stock.get('removed_mass_kg', 4.066),
-        'materialRate': stock.get('price_per_kg', 75.0),
+        'stockMassKg': stock.get('stock_mass_kg', quote_data.get('material_model', {}).get('stock_mass_kg', 11.941)),
+        'partMassKg': stock.get('part_mass_kg', quote_data.get('material_model', {}).get('part_mass_kg', 7.875)),
+        'removedMassKg': stock.get('removed_mass_kg', quote_data.get('material_model', {}).get('removed_mass_kg', 4.066)),
+        'materialRate': stock.get('price_per_kg', quote_data.get('material_model', {}).get('price_per_kg', 75.0)),
         
         # Stock dimensions
-        'stockX': stock.get('stock_dims_mm', {}).get('x', 206.0),
-        'stockY': stock.get('stock_dims_mm', {}).get('y', 71.0),
-        'stockZ': stock.get('stock_dims_mm', {}).get('z', 104.0),
+        'stockX': stock.get('stock_dims_mm', {}).get('x', quote_data.get('material_model', {}).get('stock_dims_mm', {}).get('x', 206.0)),
+        'stockY': stock.get('stock_dims_mm', {}).get('y', quote_data.get('material_model', {}).get('stock_dims_mm', {}).get('y', 71.0)),
+        'stockZ': stock.get('stock_dims_mm', {}).get('z', quote_data.get('material_model', {}).get('stock_dims_mm', {}).get('z', 104.0)),
         
         # Machining parameters
         'setupCount': part.get('setup_count', 1),
@@ -572,7 +572,8 @@ def process_step():
     
     # Save the file
     filename = secure_filename(file.filename)
-    timestamp = str(int(os.path.getmtime(file.stream))) if hasattr(file.stream, 'name') else str(hash(file.filename))
+    import time
+    timestamp = str(int(time.time()))
     unique_filename = f"{timestamp}_{filename}"
     file_path = UPLOAD_FOLDER / unique_filename
     file.save(str(file_path))
@@ -624,7 +625,7 @@ if __name__ == '__main__':
     print(f"Pipeline directory: {PIPELINE_DIR}")
     print(f"Upload folder: {UPLOAD_FOLDER}")
     print(f"Python with OCC: {find_python_with_occ()}")
-    print(f"Server will run on http://localhost:5000")
+    print(f"Server will run on http://localhost:5001")
     print()
     
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
