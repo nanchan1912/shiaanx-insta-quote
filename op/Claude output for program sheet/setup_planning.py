@@ -100,6 +100,7 @@ import json
 import sys
 import copy
 import math
+import os
 import numpy as np
 from typing import Dict, List, Optional, Tuple
 
@@ -121,6 +122,86 @@ VMC_DEFAULT_SPINDLE = np.array([0.0, -1.0, 0.0])
 
 # Tolerance for deciding two axes are parallel/anti-parallel
 AXIS_PARALLEL_TOL = 1e-3
+
+# WCS corner-origin heuristic (AD-006): min is treated as CAD origin if
+# |min| < frac * (max - min). Default is 2%.
+WCS_CORNER_ORIGIN_FRAC = 0.02
+
+# WCS register assignment (setup_id 1 -> G54, etc.)
+WCS_SEQUENCE = ["G54", "G55", "G56", "G57", "G58", "G59"]
+
+
+# ---------------------------------------------------------------------------
+# Rule sheet loaders (Sheet 5: 05_setup_planning.json, Sheet 6: 06_workholding.json)
+# ---------------------------------------------------------------------------
+_RULE_SHEET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'rule_sheets')
+_SETUP_RULE_SHEET_PATH = os.path.join(_RULE_SHEET_DIR, '05_setup_planning.json')
+_WORKHOLD_RULE_SHEET_PATH = os.path.join(_RULE_SHEET_DIR, '06_workholding.json')
+
+
+def _load_json_if_exists(path: str) -> Optional[Dict]:
+    if not os.path.exists(path):
+        return None
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def load_setup_planning_rule_sheet(path: str = None) -> Optional[Dict]:
+    """Load Sheet 5 (setup planning) JSON. Safe-by-default if missing/invalid."""
+    return _load_json_if_exists(path or _SETUP_RULE_SHEET_PATH)
+
+
+def load_workholding_rule_sheet(path: str = None) -> Optional[Dict]:
+    """Load Sheet 6 (workholding) JSON. Safe-by-default if missing/invalid."""
+    return _load_json_if_exists(path or _WORKHOLD_RULE_SHEET_PATH)
+
+
+def _apply_setup_planning_rules(rules: Dict) -> None:
+    global VMC_DEFAULT_SPINDLE, AXIS_PARALLEL_TOL
+    global WCS_CORNER_ORIGIN_FRAC, WCS_SEQUENCE
+    global _ALL_FACES
+
+    if not isinstance(rules, dict):
+        return
+
+    vmc = rules.get('vmc_convention') or {}
+    if 'default_spindle_direction_cad' in vmc:
+        try:
+            VMC_DEFAULT_SPINDLE = np.array(vmc['default_spindle_direction_cad'], dtype=float)
+        except Exception:
+            pass
+
+    if 'axis_parallel_tolerance' in rules:
+        try:
+            AXIS_PARALLEL_TOL = float(rules['axis_parallel_tolerance'])
+        except Exception:
+            pass
+
+    wcs = rules.get('wcs') or {}
+    seq = wcs.get('sequence')
+    if isinstance(seq, list) and seq:
+        WCS_SEQUENCE = [str(x) for x in seq]
+
+    corner = rules.get('wcs_origin_corner_heuristic') or {}
+    if 'fraction_of_dimension' in corner:
+        try:
+            WCS_CORNER_ORIGIN_FRAC = float(corner['fraction_of_dimension'])
+        except Exception:
+            pass
+
+    stock = rules.get('stock_state') or {}
+    faces = stock.get('all_part_faces')
+    if isinstance(faces, list) and faces:
+        _ALL_FACES = [str(f) for f in faces]
+
+
+_SETUP_RULES = load_setup_planning_rule_sheet()
+_WORKHOLD_RULES = load_workholding_rule_sheet()
+if _SETUP_RULES is not None:
+    _apply_setup_planning_rules(_SETUP_RULES)
 
 
 # ---------------------------------------------------------------------------
@@ -289,6 +370,451 @@ def _build_description(setup_type: str, axis_label: str,
 
 
 # ---------------------------------------------------------------------------
+# Workholding config builder
+# ---------------------------------------------------------------------------
+
+def _build_workholding(spindle_dir: np.ndarray,
+                       setup_type: str,
+                       rotation: Optional[Dict],
+                       bbox: Dict,
+                       setup_index: int) -> Dict:
+    """
+    Build structured workholding configuration for a setup.
+
+    Parameters
+    ----------
+    spindle_dir : np.ndarray  — unit vector: direction tool approaches from
+    setup_type  : str         — 'principal' or 'angled'
+    rotation    : dict|None   — rotation info for angled setups
+    bbox        : dict        — bounding box with xmin/xmax/ymin/ymax/zmin/zmax
+    setup_index : int         — 1-based setup number (1 = first setup)
+
+    Returns
+    -------
+    dict with keys:
+        type             : str        workholding device type
+        clamp_faces      : [str]      faces where jaws/clamps contact the part
+        rest_face        : str|None   face the part rests on (datum bottom)
+        clearance_faces  : [str]      faces that must be clear for spindle access
+        jaw_opening_mm   : float|None part dimension in clamping direction
+        datum_from_setup : int|None   setup whose machined surfaces serve as datum
+        notes            : str        operator instruction
+    """
+    sd = _unit(spindle_dir)
+
+    # Compute part dimensions from bbox if available
+    x_dim = y_dim = z_dim = None
+    if bbox:
+        xmin, xmax = bbox.get('xmin'), bbox.get('xmax')
+        ymin, ymax = bbox.get('ymin'), bbox.get('ymax')
+        zmin, zmax = bbox.get('zmin'), bbox.get('zmax')
+        if xmin is not None and xmax is not None:
+            x_dim = round(float(xmax - xmin), 2)
+        if ymin is not None and ymax is not None:
+            y_dim = round(float(ymax - ymin), 2)
+        if zmin is not None and zmax is not None:
+            z_dim = round(float(zmax - zmin), 2)
+
+    datum_from_setup = setup_index - 1 if setup_index > 1 else None
+
+    # ------------------------------------------------------------------
+    # Rule-sheet driven workholding (Sheet 6) — best-effort, safe fallback
+    # ------------------------------------------------------------------
+    if isinstance(_WORKHOLD_RULES, dict):
+        try:
+            # Angled setup template
+            if setup_type == 'angled' and rotation is not None:
+                t = ((_WORKHOLD_RULES.get('angled_setup') or {}).get('template')) or {}
+                angle = rotation.get('angle_deg')
+                ax_label = rotation.get('rotation_axis_label')
+                notes = t.get('notes_pattern') or ''
+                if notes:
+                    notes = (f'{notes} '
+                             f'(angle={angle}°, axis={ax_label})').strip()
+                else:
+                    notes = (f'Sine plate set to {angle}° around {ax_label}. '
+                             f'Verify angle with dial indicator before machining.')
+                return {
+                    'type': t.get('type', 'sine_plate'),
+                    'clamp_faces': t.get('clamp_faces', ['+X', '-X']),
+                    'rest_face': t.get('rest_face', '-Y'),
+                    'clearance_faces': t.get('clearance_faces', ['+Y']),
+                    'jaw_opening_mm': x_dim,
+                    'datum_from_setup': datum_from_setup,
+                    'notes': notes,
+                }
+
+            # Principal templates: choose by dominant spindle component (same logic as hardcoded path)
+            templates = _WORKHOLD_RULES.get('principal_spindle_templates') or []
+            chosen = None
+            if abs(sd[1]) > 0.9:
+                # +Y or -Y
+                if sd[1] > 0:
+                    # first template is expected to be +Y
+                    chosen = templates[0] if len(templates) > 0 else None
+                else:
+                    chosen = templates[1] if len(templates) > 1 else None
+            elif abs(sd[0]) > 0.9:
+                chosen = templates[2] if len(templates) > 2 else None
+            elif abs(sd[2]) > 0.9:
+                chosen = templates[3] if len(templates) > 3 else None
+
+            if isinstance(chosen, dict) and chosen:
+                wh_type = chosen.get('type')
+                if wh_type is None and abs(sd[1]) > 0.9 and sd[1] > 0:
+                    wh_type = chosen.get('type_setup_1') if setup_index == 1 else chosen.get('type_later')
+                clearance_faces = chosen.get('clearance_faces')
+                # Resolve dynamic clearance face for side setups
+                if isinstance(clearance_faces, list) and clearance_faces and isinstance(clearance_faces[0], str):
+                    if 'spindle_x' in clearance_faces[0]:
+                        clearance_faces = ['+X' if sd[0] > 0 else '-X']
+                    if 'spindle_z' in clearance_faces[0]:
+                        clearance_faces = ['+Z' if sd[2] > 0 else '-Z']
+
+                # jaw_opening mapping
+                jaw = None
+                jaw_src = chosen.get('jaw_opening_mm_from_bbox')
+                if jaw_src == 'x_dim':
+                    jaw = x_dim
+                elif jaw_src == 'y_dim':
+                    jaw = y_dim
+                elif jaw_src == 'z_dim':
+                    jaw = z_dim
+
+                return {
+                    'type': wh_type or 'custom_fixture',
+                    'clamp_faces': chosen.get('clamp_faces', []),
+                    'rest_face': chosen.get('rest_face'),
+                    'clearance_faces': clearance_faces or [],
+                    'jaw_opening_mm': jaw,
+                    'datum_from_setup': datum_from_setup,
+                    'notes': (chosen.get('notes')
+                              or 'Workholding from rule sheet (Sheet 6). Verify clamp and clearance faces.'),
+                }
+        except Exception:
+            # If anything goes wrong, fall back to the hardcoded logic below.
+            pass
+
+    # --- Angled setup ---
+    if setup_type == 'angled' and rotation is not None:
+        angle    = rotation['angle_deg']
+        ax_label = rotation['rotation_axis_label']
+        return {
+            'type'             : 'sine_plate',
+            'clamp_faces'      : ['+X', '-X'],
+            'rest_face'        : '-Y',
+            'clearance_faces'  : ['+Y'],
+            'jaw_opening_mm'   : x_dim,
+            'datum_from_setup' : datum_from_setup,
+            'notes'            : (f'Sine plate set to {angle}° around {ax_label}. '
+                                  f'Verify angle with dial indicator before machining. '
+                                  f'Alternative: 4th/5th axis rotary if available.'),
+        }
+
+    # --- Principal setups ---
+    if abs(sd[1]) > 0.9:
+        if sd[1] > 0:
+            # +Y spindle — tool comes from above (top setup)
+            wh_type = 'vise' if setup_index == 1 else 'fixture_plate'
+            return {
+                'type'             : wh_type,
+                'clamp_faces'      : ['+X', '-X'],
+                'rest_face'        : '-Y',
+                'clearance_faces'  : ['+Y'],
+                'jaw_opening_mm'   : x_dim,
+                'datum_from_setup' : datum_from_setup,
+                'notes'            : ('Standard vise, jaws on ±X faces. '
+                                      'Part rests on parallels. '
+                                      'Ensure full +Y face exposure for spindle access.'),
+            }
+        else:
+            # -Y spindle — tool comes from below (part flipped)
+            return {
+                'type'             : 'step_jaw_vise',
+                'clamp_faces'      : ['+X', '-X'],
+                'rest_face'        : '+Y',
+                'clearance_faces'  : ['-Y'],
+                'jaw_opening_mm'   : x_dim,
+                'datum_from_setup' : datum_from_setup,
+                'notes'            : ('Part flipped — previously machined top face '
+                                      'is now the datum bottom. Use step jaws to '
+                                      'clear previously machined features. '
+                                      'Verify datum face is fully seated before zeroing.'),
+            }
+
+    elif abs(sd[0]) > 0.9:
+        # ±X spindle — side face setup
+        clearance = '+X' if sd[0] > 0 else '-X'
+        return {
+            'type'             : 'angle_plate',
+            'clamp_faces'      : ['-Y', '+Z'],
+            'rest_face'        : '-Y',
+            'clearance_faces'  : [clearance],
+            'jaw_opening_mm'   : z_dim,
+            'datum_from_setup' : datum_from_setup,
+            'notes'            : (f'90° angle plate. Mount part with bottom face (-Y) '
+                                  f'bolted to plate. {clearance} face must be fully '
+                                  f'exposed for spindle access. Indicate in before machining.'),
+        }
+
+    elif abs(sd[2]) > 0.9:
+        # ±Z spindle — front/rear face setup
+        clearance = '+Z' if sd[2] > 0 else '-Z'
+        return {
+            'type'             : 'angle_plate',
+            'clamp_faces'      : ['-Y', '+X'],
+            'rest_face'        : '-Y',
+            'clearance_faces'  : [clearance],
+            'jaw_opening_mm'   : x_dim,
+            'datum_from_setup' : datum_from_setup,
+            'notes'            : (f'90° angle plate. Mount part with bottom face (-Y) '
+                                  f'and side face (+X) referenced. {clearance} face '
+                                  f'must be exposed for spindle access.'),
+        }
+
+    # Fallback — unusual axis combination
+    return {
+        'type'             : 'custom_fixture',
+        'clamp_faces'      : [],
+        'rest_face'        : None,
+        'clearance_faces'  : [],
+        'jaw_opening_mm'   : None,
+        'datum_from_setup' : datum_from_setup,
+        'notes'            : 'Custom fixture required — consult manufacturing engineer.',
+    }
+
+
+# ---------------------------------------------------------------------------
+# WCS origin computer
+# ---------------------------------------------------------------------------
+
+def _compute_wcs_origin(spindle_dir: np.ndarray, bbox: Dict) -> Dict:
+    """
+    Compute the actual 3D WCS zero point in CAD space for a setup.
+
+    The WCS origin is the point the machinist probes or edges to before
+    running the program. It is always on the surface the spindle hits first
+    (Z=0 in work coordinates), at either the part center or the CAD-origin
+    corner depending on where the bounding box starts.
+
+    Corner zero is used when xmin ≈ 0 (part placed at CAD origin) because
+    all G-code coordinates then stay positive, which is easier to verify
+    on the machine. Center zero is used for parts not aligned to the CAD
+    origin (symmetric travel either side of zero).
+
+    Parameters
+    ----------
+    spindle_dir : np.ndarray  — unit vector: direction tool approaches from
+    bbox        : dict        — bounding box with xmin/xmax/ymin/ymax/zmin/zmax
+
+    Returns
+    -------
+    dict with keys:
+        x_mm      : float|None   CAD X coordinate of WCS X0
+        y_mm      : float|None   CAD Y coordinate of WCS Y0
+        z_mm      : float|None   CAD Z coordinate of WCS Z0 (top face)
+        origin_x  : str          label: 'CENTER', 'CORNER', '+face', '-face'
+        origin_y  : str          label for second in-plane axis
+        origin_z  : str          always 'TOP'
+        note      : str          plain English probe instruction
+    """
+    if not bbox:
+        return {
+            'x_mm': None, 'y_mm': None, 'z_mm': None,
+            'origin_x': 'CENTER', 'origin_y': 'CENTER', 'origin_z': 'TOP',
+            'note': 'No bounding box — set zero at part centre by inspection.',
+        }
+
+    xmin = float(bbox.get('xmin', 0))
+    xmax = float(bbox.get('xmax', 0))
+    ymin = float(bbox.get('ymin', 0))
+    ymax = float(bbox.get('ymax', 0))
+    zmin = float(bbox.get('zmin', 0))
+    zmax = float(bbox.get('zmax', 0))
+
+    x_dim = xmax - xmin
+    y_dim = ymax - ymin
+    z_dim = zmax - zmin
+
+    # Corner zero when the part sits at CAD origin (mins ≈ 0).
+    # Threshold: min < WCS_CORNER_ORIGIN_FRAC of the dimension (handles floating-point near-zero).
+    def _at_origin(mn, dim):
+        return dim > 0 and abs(mn) < WCS_CORNER_ORIGIN_FRAC * dim
+
+    sd = _unit(spindle_dir)
+
+    # ------------------------------------------------------------------
+    # ±Y spindle — top or bottom setup
+    # Face plane: CAD X (work X) × CAD Z (work Y). Depth axis: CAD Y.
+    # ------------------------------------------------------------------
+    if abs(sd[1]) > 0.9:
+        z_coord = ymax if sd[1] > 0 else ymin   # top face in CAD Y
+        face    = 'top' if sd[1] > 0 else 'bottom'
+
+        x_at_origin = _at_origin(xmin, x_dim)
+        z_at_origin = _at_origin(zmin, z_dim)   # work Y uses CAD Z
+
+        if x_at_origin:
+            x_coord  = xmin
+            origin_x = f'CORNER (xmin={xmin:.3f}mm — all X coords positive)'
+        else:
+            x_coord  = (xmin + xmax) / 2
+            origin_x = f'CENTER (X={x_coord:.3f}mm, {x_coord - xmin:.2f}mm from xmin edge)'
+
+        if z_at_origin:
+            y_coord  = zmin
+            origin_y = f'CORNER (zmin={zmin:.3f}mm — all Y coords positive)'
+        else:
+            y_coord  = (zmin + zmax) / 2
+            origin_y = f'CENTER (Z={y_coord:.3f}mm, {y_coord - zmin:.2f}mm from zmin edge)'
+
+        note = (f'Probe {face} face for Z0 (Y={z_coord:.3f}mm in CAD). '
+                f'X0: {origin_x}. Y0: {origin_y}. '
+                f'Part envelope: {x_dim:.2f} × {z_dim:.2f} × {y_dim:.2f}mm (X × Z × Y).')
+
+        return {
+            'x_mm': round(x_coord, 4), 'y_mm': round(y_coord, 4),
+            'z_mm': round(z_coord, 4),
+            'origin_x': origin_x, 'origin_y': origin_y, 'origin_z': 'TOP',
+            'note': note,
+        }
+
+    # ------------------------------------------------------------------
+    # ±X spindle — left or right side setup
+    # Face plane: CAD Y (work X) × CAD Z (work Y). Depth axis: CAD X.
+    # ------------------------------------------------------------------
+    elif abs(sd[0]) > 0.9:
+        z_coord = xmax if sd[0] > 0 else xmin
+        face    = 'right' if sd[0] > 0 else 'left'
+
+        y_at_origin = _at_origin(ymin, y_dim)
+        z_at_origin = _at_origin(zmin, z_dim)
+
+        if y_at_origin:
+            x_coord  = ymin
+            origin_x = f'CORNER (ymin={ymin:.3f}mm)'
+        else:
+            x_coord  = (ymin + ymax) / 2
+            origin_x = f'CENTER (Y={x_coord:.3f}mm)'
+
+        if z_at_origin:
+            y_coord  = zmin
+            origin_y = f'CORNER (zmin={zmin:.3f}mm)'
+        else:
+            y_coord  = (zmin + zmax) / 2
+            origin_y = f'CENTER (Z={y_coord:.3f}mm)'
+
+        note = (f'Probe {face} face for Z0 (X={z_coord:.3f}mm in CAD). '
+                f'X0: {origin_x}. Y0: {origin_y}. '
+                f'Part envelope: {y_dim:.2f} × {z_dim:.2f} × {x_dim:.2f}mm.')
+
+        return {
+            'x_mm': round(x_coord, 4), 'y_mm': round(y_coord, 4),
+            'z_mm': round(z_coord, 4),
+            'origin_x': origin_x, 'origin_y': origin_y, 'origin_z': 'TOP',
+            'note': note,
+        }
+
+    # ------------------------------------------------------------------
+    # ±Z spindle — front or rear face setup
+    # Face plane: CAD X (work X) × CAD Y (work Y). Depth axis: CAD Z.
+    # ------------------------------------------------------------------
+    elif abs(sd[2]) > 0.9:
+        z_coord = zmax if sd[2] > 0 else zmin
+        face    = 'front' if sd[2] > 0 else 'rear'
+
+        x_at_origin = _at_origin(xmin, x_dim)
+        y_at_origin = _at_origin(ymin, y_dim)
+
+        if x_at_origin:
+            x_coord  = xmin
+            origin_x = f'CORNER (xmin={xmin:.3f}mm)'
+        else:
+            x_coord  = (xmin + xmax) / 2
+            origin_x = f'CENTER (X={x_coord:.3f}mm)'
+
+        if y_at_origin:
+            y_coord  = ymin
+            origin_y = f'CORNER (ymin={ymin:.3f}mm)'
+        else:
+            y_coord  = (ymin + ymax) / 2
+            origin_y = f'CENTER (Y={y_coord:.3f}mm)'
+
+        note = (f'Probe {face} face for Z0 (Z={z_coord:.3f}mm in CAD). '
+                f'X0: {origin_x}. Y0: {origin_y}. '
+                f'Part envelope: {x_dim:.2f} × {y_dim:.2f} × {z_dim:.2f}mm.')
+
+        return {
+            'x_mm': round(x_coord, 4), 'y_mm': round(y_coord, 4),
+            'z_mm': round(z_coord, 4),
+            'origin_x': origin_x, 'origin_y': origin_y, 'origin_z': 'TOP',
+            'note': note,
+        }
+
+    # Fallback
+    return {
+        'x_mm': None, 'y_mm': None, 'z_mm': None,
+        'origin_x': 'CENTER', 'origin_y': 'CENTER', 'origin_z': 'TOP',
+        'note': 'Unusual spindle direction — set zero at part centre by inspection.',
+    }
+
+
+# ---------------------------------------------------------------------------
+# Stock state tracker
+# ---------------------------------------------------------------------------
+
+_ALL_FACES = ['+X', '-X', '+Y', '-Y', '+Z', '-Z']
+
+
+def _compute_stock(setups: List[Dict], setup_index: int) -> Dict:
+    """
+    Compute the stock state when a setup begins.
+
+    Parameters
+    ----------
+    setups      : list of setup dicts built so far (in order, with workholding)
+    setup_index : 0-based index of the setup whose stock we are computing
+
+    Returns
+    -------
+    dict with keys:
+        type             : 'raw_billet' | 'previous_setup'
+        source_setup_id  : int | None   — which setup produced this stock
+        remaining_faces  : [str]        — faces not yet machined
+        machined_faces   : [str]        — faces machined in earlier setups
+
+    Logic
+    -----
+    Each setup machines the faces listed in its workholding 'clearance_faces'
+    (those are the faces the spindle accessed). We accumulate all clearance
+    faces from setups 0 … (setup_index-1) to find what is already machined.
+    """
+    if setup_index == 0:
+        return {
+            'type'            : 'raw_billet',
+            'source_setup_id' : None,
+            'remaining_faces' : list(_ALL_FACES),
+            'machined_faces'  : [],
+        }
+
+    machined = []
+    for s in setups[:setup_index]:
+        wh = s.get('workholding', {})
+        for face in wh.get('clearance_faces', []):
+            if face not in machined:
+                machined.append(face)
+
+    remaining = [f for f in _ALL_FACES if f not in machined]
+
+    return {
+        'type'            : 'previous_setup',
+        'source_setup_id' : setups[setup_index - 1]['setup_id'],
+        'remaining_faces' : remaining,
+        'machined_faces'  : machined,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Main planning logic
 # ---------------------------------------------------------------------------
 
@@ -415,31 +941,20 @@ def plan_setups(processes_data: Dict,
         # ------------------------------------------------------------------
         # WCS assignment (§2a)
         # ------------------------------------------------------------------
-        wcs_sequence = ["G54", "G55", "G56", "G57", "G58", "G59"]
-        wcs = wcs_sequence[min(setup_id - 1, len(wcs_sequence) - 1)]
+        wcs = WCS_SEQUENCE[min(setup_id - 1, len(WCS_SEQUENCE) - 1)]
 
-        # Origin X/Y based on spindle direction; Z is always TOP
-        sd = spindle_dir  # already a unit vector
-        if abs(sd[1]) > 0.9:          # ±Y (top-down or bottom-up)
-            origin_x = "CENTER"
-            origin_y = "CENTER"
-        elif sd[0] > 0.9:             # +X (right side)
-            origin_x = "+"
-            origin_y = "CENTER"
-        elif sd[0] < -0.9:            # -X (left side)
-            origin_x = "-"
-            origin_y = "CENTER"
-        elif abs(sd[2]) > 0.9:        # ±Z (front/rear)
-            origin_x = "CENTER"
-            origin_y = "CENTER"
-        else:
-            origin_x = "CENTER"
-            origin_y = "CENTER"
-        origin_z = "TOP"
+        wcs_origin = _compute_wcs_origin(
+            spindle_dir,
+            processes_data.get('bounding_box', {}),
+        )
+        origin_x = wcs_origin['origin_x']
+        origin_y = wcs_origin['origin_y']
+        origin_z = wcs_origin['origin_z']
 
         # ------------------------------------------------------------------
         # Bounding box dimensions (§2b)
         # ------------------------------------------------------------------
+        sd   = spindle_dir   # unit vector — used in bbox dimension mapping below
         bbox = processes_data.get('bounding_box', {})
         if bbox:
             xmin = bbox.get('xmin', None)
@@ -508,12 +1023,20 @@ def plan_setups(processes_data: Dict,
             'origin_x'              : origin_x,
             'origin_y'              : origin_y,
             'origin_z'              : origin_z,
+            'wcs_origin_mm'         : wcs_origin,
             'setup_face_width'      : face_width,
             'setup_face_height'     : face_height,
             'setup_depth'           : depth,
             'cluster_ids'           : sorted(c['cluster_id'] for c in group_clust),
             'operation_count'       : op_count,
             'machining_sequence'    : machining_sequence,
+            'workholding'           : _build_workholding(
+                                          spindle_dir,
+                                          setup_type,
+                                          rotation,
+                                          processes_data.get('bounding_box', {}),
+                                          setup_id,
+                                      ),
         }
         setups.append(setup)
         setup_id += 1
@@ -557,10 +1080,23 @@ def plan_setups(processes_data: Dict,
                     }
                     for c in no_axis
                 ],
+                'workholding'           : _build_workholding(
+                                              np.array([0.0, 1.0, 0.0]),
+                                              'principal',
+                                              None,
+                                              processes_data.get('bounding_box', {}),
+                                              setup_id,
+                                          ),
             })
 
     # ------------------------------------------------------------------
-    # Step 5: Write setup_id back onto each cluster for traceability
+    # Step 5: Attach stock state to each setup (second pass)
+    # ------------------------------------------------------------------
+    for i, s in enumerate(setups):
+        s['stock'] = _compute_stock(setups, i)
+
+    # ------------------------------------------------------------------
+    # Step 6: Write setup_id back onto each cluster for traceability
     # ------------------------------------------------------------------
     cluster_to_setup = {}
     for s in setups:
@@ -603,14 +1139,43 @@ def print_setup_summary(data: Dict):
         print(f"    Operations: {ops} total")
         print(f"    Fixture   : {s['fixture_note']}")
 
+        stk = s.get('stock')
+        if stk:
+            src = f" (from setup {stk['source_setup_id']})" if stk.get('source_setup_id') else ''
+            print(f"    Stock     : {stk['type']}{src}")
+            print(f"                machined so far : {stk['machined_faces'] or 'none'}")
+            print(f"                remaining faces : {stk['remaining_faces']}")
+
+        wh = s.get('workholding')
+        if wh:
+            jaw = f"  jaw_opening={wh['jaw_opening_mm']}mm" if wh.get('jaw_opening_mm') else ''
+            datum = f"  datum_from_setup={wh['datum_from_setup']}" if wh.get('datum_from_setup') else ''
+            print(f"    Workholding: type={wh['type']}  "
+                  f"clamp={wh['clamp_faces']}  "
+                  f"rest={wh['rest_face']}"
+                  f"{jaw}{datum}")
+
         rot = s.get('rotation_from_default')
         if rot:
             print(f"    Rotation  : {rot['angle_deg']}° around {rot['rotation_axis_label']}")
 
-        print(f"    WCS       : {s.get('wcs', 'N/A')}  "
-              f"Origin X={s.get('origin_x', '?')}  "
-              f"Y={s.get('origin_y', '?')}  "
-              f"Z={s.get('origin_z', '?')}")
+        print(f"    WCS       : {s.get('wcs', 'N/A')}")
+        wo = s.get('wcs_origin_mm', {})
+        if wo:
+            origin_x = s.get('origin_x', '?')
+            origin_y = s.get('origin_y', '?')
+            origin_z = s.get('origin_z')
+            origin_z_label = origin_z if origin_z is not None else 'TOP'
+            cad_x = wo.get('x_mm') if wo.get('x_mm') is not None else 0.0
+            cad_y = wo.get('y_mm') if wo.get('y_mm') is not None else 0.0
+            cad_z = wo.get('z_mm') if wo.get('z_mm') is not None else 0.0
+            print(f"    Origin    : X={origin_x}")
+            print(f"                Y={origin_y}")
+            print(f"                Z={origin_z_label}  "
+                  f"(CAD point: {cad_x:.3f}mm, "
+                  f"{cad_y:.3f}mm, "
+                  f"{cad_z:.3f}mm)")
+            print(f"    Probe note: {wo.get('note', '')}")
 
         fw = s.get('setup_face_width')
         fh = s.get('setup_face_height')

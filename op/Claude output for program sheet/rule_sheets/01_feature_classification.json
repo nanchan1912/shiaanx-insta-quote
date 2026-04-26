@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "ruleset_id": "feature_classification_v1",
+  "updated_at": "2026-04-14",
+  "description": "Tunable parameters and decision order for bore/boss/plane/slot classification. Mirrors constants and logic documented in 3. classify_features.py as of this date. The Python module remains authoritative until load_rule_sheet() (or equivalent) is implemented.",
+  "pipeline_stage": "3. classify_features.py",
+  "decision_priority": [
+    "seed_type branches: background → background; plane/plane_feature → pocket vs planar_face; slot → slot; boss → boss; bore → bore tree",
+    "bore: len(radii) >= 2 → counterbore vs large_bore (max/min radius vs thresholds)",
+    "bore: single radius, radius >= large_bore_radius_mm → large_bore",
+    "bore: single radius, face_count >= 2 → through_hole",
+    "bore: single face → ddr = depth / (2*radius); ddr <= single_face_through_hole_ddr_max → through_hole (medium confidence) else blind_hole (low)",
+    "append _angled when is_principal_axis is false (except unknown_bore)"
+  ],
+  "thresholds_mm": {
+    "large_bore_radius_mm": {
+      "value": 10.0,
+      "unit": "mm",
+      "role": "Radius above which a single-step bore is large_bore; also used in multi-radius bore max-radius check."
+    },
+    "single_face_through_hole_ddr_max": {
+      "value": 0.5,
+      "unit": "ratio",
+      "role": "If depth / (2*r) <= this, treat single-face bore as through_hole (thin arc / exit not in cluster)."
+    },
+    "pocket_max_area_mm2": {
+      "value": 500.0,
+      "unit": "mm2",
+      "role": "Plane cluster with perpendicular walls must have floor area below this to be pocket vs planar_face."
+    },
+    "drill_max_radius_mm": {
+      "value": 8.0,
+      "unit": "mm",
+      "role": "If smallest radius in a multi-radius bore >= this, classify whole feature as large_bore (cannot drill smallest step)."
+    }
+  },
+  "pocket_rules": {
+    "min_perpendicular_wall_count": 2,
+    "confidence_high_min_perp_walls": 3,
+    "notes": "If has_perpendicular_walls and perp_wall_count >= min_perpendicular_wall_count and face_area < pocket_max_area_mm2 → pocket (or pocket_angled)."
+  },
+  "angled_modifier": {
+    "suffix": "_angled",
+    "applies_when": "is_principal_axis is false",
+    "excludes": ["unknown_bore"]
+  },
+  "warnings": [
+    "chamfer and tapped_hole are not produced by classify_cluster() today; MFCAD supervision uses 07_label_taxonomy.json.",
+    "large_bore_angled is produced by classifier but select_process() only branches on 'large_bore' without suffix — verify dispatcher if angled large bores appear."
+  ]
+}

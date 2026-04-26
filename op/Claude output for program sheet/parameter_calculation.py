@@ -118,6 +118,93 @@ _DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 
 TOOL_CHANGE_TIME_S = 8.0  # seconds per ATC tool change
 
+
+# ---------------------------------------------------------------------------
+# Rule sheet loader (Sheet 4: 04_cutting_parameters.json)
+# ---------------------------------------------------------------------------
+_RULE_SHEET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'rule_sheets')
+_CUT_PARAMS_SHEET_PATH = os.path.join(_RULE_SHEET_DIR, '04_cutting_parameters.json')
+
+
+def load_cutting_parameter_rule_sheet(path: str = None) -> Optional[Dict]:
+    """
+    Load Sheet 4 cutting parameter rules (JSON). Returns dict or None.
+
+    Safe-by-default: if missing/invalid, keep hardcoded defaults.
+    """
+    p = path or _CUT_PARAMS_SHEET_PATH
+    if not os.path.exists(p):
+        return None
+    try:
+        with open(p, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def _apply_cutting_parameter_rules(rules: Dict) -> None:
+    """
+    Apply rule-sheet values to this module's global defaults.
+    CLI args / function args can still override at runtime.
+    """
+    global MAX_SPINDLE_RPM, COOLANT
+    global PECK_FRACTIONS
+    global TSC_VC_BOOST_SMALL_DRILL
+    global MIN_VF_MMPM, RPM_ROUND_TO, VF_ROUND_TO
+    global TOOL_CHANGE_TIME_S
+
+    if not isinstance(rules, dict):
+        return
+
+    # Machine defaults
+    machine = rules.get('machine_defaults') or {}
+    if 'max_spindle_rpm' in machine:
+        MAX_SPINDLE_RPM = int(machine['max_spindle_rpm'])
+    if 'coolant_default' in machine:
+        coolant = str(machine['coolant_default'])
+        if coolant in ('through_spindle', 'flood', 'mist', 'dry'):
+            COOLANT = coolant
+
+    # Peck fractions
+    peck = rules.get('peck_fractions_of_tool_diameter') or {}
+    if isinstance(peck, dict) and peck:
+        cleaned = {}
+        for coolant, cycles in peck.items():
+            if coolant == 'comment':
+                continue
+            if not isinstance(cycles, dict):
+                continue
+            cleaned[coolant] = {
+                'peck': float(cycles.get('peck', PECK_FRACTIONS.get(coolant, {}).get('peck', 0.5))),
+                'deep_peck': float(cycles.get('deep_peck', PECK_FRACTIONS.get(coolant, {}).get('deep_peck', 0.3))),
+            }
+        if cleaned:
+            PECK_FRACTIONS = cleaned
+
+    # TSC small drill boost
+    tsc = rules.get('tsc_small_drill_boost') or {}
+    if 'vc_multiplier' in tsc:
+        TSC_VC_BOOST_SMALL_DRILL = float(tsc['vc_multiplier'])
+
+    # Safety + rounding
+    sr = rules.get('safety_and_rounding') or {}
+    if 'min_vf_mm_per_min' in sr:
+        MIN_VF_MMPM = float(sr['min_vf_mm_per_min'])
+    if 'rpm_round_to' in sr:
+        RPM_ROUND_TO = int(sr['rpm_round_to'])
+    if 'vf_round_to' in sr:
+        VF_ROUND_TO = int(sr['vf_round_to'])
+
+    # Cycle time estimation
+    cte = rules.get('cycle_time_estimation_s') or {}
+    if 'tool_change_per_unique_tool' in cte:
+        TOOL_CHANGE_TIME_S = float(cte['tool_change_per_unique_tool'])
+
+
+_cut_rules = load_cutting_parameter_rule_sheet()
+if _cut_rules is not None:
+    _apply_cutting_parameter_rules(_cut_rules)
+
 # ---------------------------------------------------------------------------
 # Tool database lookup (for fields not carried forward by tool_selection)
 # ---------------------------------------------------------------------------
@@ -447,6 +534,13 @@ def _calc_step_params(step: Dict, cluster: Dict,
         ap = depth  # may be None for spot drill — that is fine
     elif op == 'boring_bar':
         ap = depth
+    elif op == 'face_mill':
+        # DOC by pass type. Source: strategy rules (Gaurav): RF=1mm, FINISH=0.5mm.
+        face_ap = 1.0 if pass_type != 'FINISH' else 0.5
+        if depth is not None:
+            ap = min(face_ap, depth)
+        else:
+            ap = face_ap
     elif ap_max is not None:
         # Use tool database ap_max, but don't exceed actual feature depth
         if depth is not None:
@@ -465,14 +559,11 @@ def _calc_step_params(step: Dict, cluster: Dict,
         ae = None   # not applicable for rotating-tool drilling
 
     elif op == 'face_mill':
-        # ae = fraction of face mill diameter
-        if ae_fraction and tool_dia:
-            ae = round(ae_fraction * tool_dia, 2)
-        elif ae_max:
-            ae = ae_max
-        else:
-            ae = round(0.75 * tool_dia, 2)
-            notes.append('ae_fraction not in DB — defaulting to 75% of cutter dia')
+        # ae = stepover % × tool_dia, differentiated by pass_type.
+        # Source: ShiaanX strategy rules (Gaurav): RF=60%, FINISH=40%.
+        # Overrides generic ae_fraction from tool DB for face milling.
+        face_ae_ratio = 0.60 if pass_type != 'FINISH' else 0.40
+        ae = round(face_ae_ratio * tool_dia, 2)
 
     elif op in ('counterbore_mill',):
         # Counterbore: tool fills the bore — ae = radial cut = half tool dia
@@ -536,6 +627,15 @@ def _calc_step_params(step: Dict, cluster: Dict,
     # ------------------------------------------------------------------
     # Write results back to step
     # ------------------------------------------------------------------
+    # Operation-level coolant override: face_mill uses flood regardless of
+    # machine global (which may be through_spindle for drilling).
+    # Source: strategy rules — all face rules specify flood coolant.
+    FACE_MILL_COOLANT_OVERRIDE = {
+        'face_mill': 'flood', 'contour_mill': 'flood', 'pocket_mill': 'flood',
+        'chamfer_mill': 'flood', 'slot_mill': 'flood', 'tap_rh': 'flood',
+    }
+    step_coolant = FACE_MILL_COOLANT_OVERRIDE.get(op, coolant)
+
     step['rpm']            = rpm
     step['vf_mmpm']        = vf
     step['ap_mm']          = round(ap, 4) if ap is not None else None
@@ -543,6 +643,7 @@ def _calc_step_params(step: Dict, cluster: Dict,
     step['peck_mm']        = peck
     step['rpm_capped']     = capped
     step['actual_Vc_mmin'] = act_Vc
+    step['coolant']        = step_coolant
     step['param_notes']    = ' | '.join(notes)
 
     # Carry-through fields from process_selection (§4a) — preserve if already set

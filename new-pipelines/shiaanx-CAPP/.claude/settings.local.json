@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Read(//c/Users/Siddhant Gupta/AppData/Local/nvm//**)",
+      "Read(//usr/**)",
+      "Bash('/c/Users/Siddhant Gupta/miniconda3/envs/occ/python.exe' '1. extract_features.py' Dataset/MFCAD_dataset/MFCAD++_dataset/step/test/25.step)",
+      "Bash('/c/Users/Siddhant Gupta/miniconda3/envs/occ/python.exe' '2. cluster_features.py' Dataset/MFCAD_dataset/MFCAD++_dataset/step/test/25_features.json)",
+      "Bash('/c/Users/Siddhant Gupta/miniconda3/envs/occ/python.exe' -c ':*)",
+      "Bash(\"/c/Users/Siddhant Gupta/miniconda3/envs/occ/python.exe\" \"5. setup_planning.py\" \"Dataset/MFCAD_dataset/MFCAD++_dataset/step/test/25/25_processes.json\")",
+      "Bash(\"/c/Users/Siddhant Gupta/miniconda3/envs/occ/python.exe\" \"4. process_selection.py\" \"Dataset/MFCAD_dataset/MFCAD++_dataset/step/test/25/25_features_clustered_classified.json\")",
+      "Bash(\"/c/Users/Siddhant Gupta/miniconda3/envs/occ/python.exe\" \"5. setup_planning.py\" \"Dataset/MFCAD_dataset/MFCAD++_dataset/step/test/25/25_features_clustered_classified_processes.json\")",
+      "Bash(ls:*)",
+      "Bash(\"/c/Users/Siddhant Gupta/miniconda3/envs/occ/python.exe\" \"7. tool_selection.py\" \"Dataset/MFCAD_dataset/MFCAD++_dataset/step/test/25/25_features_clustered_classified_processes.json\")",
+      "Bash(\"/c/Users/Siddhant Gupta/miniconda3/envs/occ/python.exe\" \"7. tool_selection.py\" \"Dataset/MFCAD_dataset/MFCAD++_dataset/step/test/25/25_features_clustered_classified_processes.json\" --db \"7a. tool_database.json\")",
+      "Bash(\"/c/Users/Siddhant Gupta/miniconda3/envs/occ/python.exe\" \"5. setup_planning.py\" \"Dataset/MFCAD_dataset/MFCAD++_dataset/step/test/25/25_features_clustered_classified_processes_tools.json\")",
+      "Bash(\"/c/Users/Siddhant Gupta/miniconda3/envs/occ/python.exe\" \"8. parameter_calculation.py\" \"Dataset/MFCAD_dataset/MFCAD++_dataset/step/test/25/25_features_clustered_classified_processes_tools_setups.json\")",
+      "Bash(\"/c/Users/Siddhant Gupta/miniconda3/envs/occ/python.exe\" \"9. program_sheet.py\" \"Dataset/MFCAD_dataset/MFCAD++_dataset/step/test/25/25_features_clustered_classified_processes_tools_setups_params.json\")"
+    ]
+  }
+}

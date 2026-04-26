@@ -1,0 +1,397 @@
+{
+  "clusters": [
+    {
+      "cluster_id": 0,
+      "seed_face_index": 4,
+      "seed_type": "bore",
+      "face_indices": [
+        4,
+        11
+      ],
+      "face_count": 2,
+      "feature_axis": [
+        -0.0,
+        -1.0,
+        -0.0
+      ],
+      "depth": 50.0,
+      "radii": [
+        10.0
+      ],
+      "is_principal_axis": true,
+      "feature_type": "large_bore",
+      "confidence": "high",
+      "process_sequence_turning": [
+        {
+          "step": 1,
+          "operation": "face_turn",
+          "machine": "turning",
+          "diameter_mm": 20.0,
+          "depth_mm": null,
+          "drill_cycle": null,
+          "reason": "Face to clean entry plane before boring"
+        },
+        {
+          "step": 2,
+          "operation": "rough_bore",
+          "machine": "turning",
+          "diameter_mm": 19.0,
+          "depth_mm": 50.0,
+          "drill_cycle": null,
+          "reason": "Rough bore to ~95% of final diameter d\u224819.0mm"
+        },
+        {
+          "step": 3,
+          "operation": "finish_bore",
+          "machine": "turning",
+          "diameter_mm": 20.0,
+          "depth_mm": 50.0,
+          "drill_cycle": null,
+          "reason": "Finish bore to final d=20.0mm"
+        }
+      ],
+      "machine_type": "milling",
+      "machine_selected": "milling \u2014 preferred machine (PREFERRED_MACHINE=milling)",
+      "process_sequence": [
+        {
+          "step": 1,
+          "operation": "face_mill",
+          "machine": "milling",
+          "diameter_mm": 20.0,
+          "depth_mm": 50.0,
+          "drill_cycle": null,
+          "reason": "Face mill large bore area d=20.0mm"
+        },
+        {
+          "step": 2,
+          "operation": "circular_interp",
+          "machine": "milling",
+          "diameter_mm": 20.0,
+          "depth_mm": 50.0,
+          "drill_cycle": null,
+          "reason": "Circular interpolation with end mill to reach d=20.0mm \u2014 diameter too large for drill"
+        }
+      ],
+      "setup_id": 1
+    },
+    {
+      "cluster_id": 1,
+      "seed_face_index": 0,
+      "seed_type": "boss",
+      "face_indices": [
+        0,
+        18,
+        19
+      ],
+      "face_count": 3,
+      "feature_axis": [
+        -0.0,
+        -1.0,
+        -0.0
+      ],
+      "depth": 15.0,
+      "radii": [
+        10.0
+      ],
+      "is_principal_axis": true,
+      "feature_type": "boss",
+      "confidence": "high",
+      "process_sequence_turning": [
+        {
+          "step": 1,
+          "operation": "rough_turn",
+          "machine": "turning",
+          "diameter_mm": 21.0,
+          "depth_mm": 15.0,
+          "drill_cycle": null,
+          "reason": "Rough turn boss OD, leave 5% for finish pass"
+        },
+        {
+          "step": 2,
+          "operation": "finish_turn",
+          "machine": "turning",
+          "diameter_mm": 20.0,
+          "depth_mm": 15.0,
+          "drill_cycle": null,
+          "reason": "Finish turn to final OD d=20.0mm"
+        }
+      ],
+      "machine_type": "milling",
+      "machine_selected": "milling \u2014 preferred machine (PREFERRED_MACHINE=milling)",
+      "process_sequence": [
+        {
+          "step": 1,
+          "operation": "contour_mill",
+          "machine": "milling",
+          "diameter_mm": 20.0,
+          "depth_mm": 15.0,
+          "drill_cycle": null,
+          "reason": "Contour mill end mill around boss OD d=20.0mm h=15.0mm"
+        }
+      ],
+      "setup_id": 1
+    },
+    {
+      "cluster_id": 2,
+      "seed_face_index": 1,
+      "seed_type": "boss",
+      "face_indices": [
+        1,
+        16,
+        17
+      ],
+      "face_count": 3,
+      "feature_axis": [
+        -0.0,
+        -1.0,
+        -0.0
+      ],
+      "depth": 15.0,
+      "radii": [
+        10.0
+      ],
+      "is_principal_axis": true,
+      "feature_type": "boss",
+      "confidence": "high",
+      "process_sequence_turning": [
+        {
+          "step": 1,
+          "operation": "rough_turn",
+          "machine": "turning",
+          "diameter_mm": 21.0,
+          "depth_mm": 15.0,
+          "drill_cycle": null,
+          "reason": "Rough turn boss OD, leave 5% for finish pass"
+        },
+        {
+          "step": 2,
+          "operation": "finish_turn",
+          "machine": "turning",
+          "diameter_mm": 20.0,
+          "depth_mm": 15.0,
+          "drill_cycle": null,
+          "reason": "Finish turn to final OD d=20.0mm"
+        }
+      ],
+      "machine_type": "milling",
+      "machine_selected": "milling \u2014 preferred machine (PREFERRED_MACHINE=milling)",
+      "process_sequence": [
+        {
+          "step": 1,
+          "operation": "contour_mill",
+          "machine": "milling",
+          "diameter_mm": 20.0,
+          "depth_mm": 15.0,
+          "drill_cycle": null,
+          "reason": "Contour mill end mill around boss OD d=20.0mm h=15.0mm"
+        }
+      ],
+      "setup_id": 1
+    },
+    {
+      "cluster_id": 3,
+      "seed_face_index": 2,
+      "seed_type": "boss",
+      "face_indices": [
+        2,
+        14,
+        15
+      ],
+      "face_count": 3,
+      "feature_axis": [
+        -0.0,
+        -1.0,
+        -0.0
+      ],
+      "depth": 15.0,
+      "radii": [
+        10.0
+      ],
+      "is_principal_axis": true,
+      "feature_type": "boss",
+      "confidence": "high",
+      "process_sequence_turning": [
+        {
+          "step": 1,
+          "operation": "rough_turn",
+          "machine": "turning",
+          "diameter_mm": 21.0,
+          "depth_mm": 15.0,
+          "drill_cycle": null,
+          "reason": "Rough turn boss OD, leave 5% for finish pass"
+        },
+        {
+          "step": 2,
+          "operation": "finish_turn",
+          "machine": "turning",
+          "diameter_mm": 20.0,
+          "depth_mm": 15.0,
+          "drill_cycle": null,
+          "reason": "Finish turn to final OD d=20.0mm"
+        }
+      ],
+      "machine_type": "milling",
+      "machine_selected": "milling \u2014 preferred machine (PREFERRED_MACHINE=milling)",
+      "process_sequence": [
+        {
+          "step": 1,
+          "operation": "contour_mill",
+          "machine": "milling",
+          "diameter_mm": 20.0,
+          "depth_mm": 15.0,
+          "drill_cycle": null,
+          "reason": "Contour mill end mill around boss OD d=20.0mm h=15.0mm"
+        }
+      ],
+      "setup_id": 1
+    },
+    {
+      "cluster_id": 4,
+      "seed_face_index": 3,
+      "seed_type": "boss",
+      "face_indices": [
+        3,
+        12,
+        13
+      ],
+      "face_count": 3,
+      "feature_axis": [
+        -0.0,
+        -1.0,
+        -0.0
+      ],
+      "depth": 15.0,
+      "radii": [
+        10.0
+      ],
+      "is_principal_axis": true,
+      "feature_type": "boss",
+      "confidence": "high",
+      "process_sequence_turning": [
+        {
+          "step": 1,
+          "operation": "rough_turn",
+          "machine": "turning",
+          "diameter_mm": 21.0,
+          "depth_mm": 15.0,
+          "drill_cycle": null,
+          "reason": "Rough turn boss OD, leave 5% for finish pass"
+        },
+        {
+          "step": 2,
+          "operation": "finish_turn",
+          "machine": "turning",
+          "diameter_mm": 20.0,
+          "depth_mm": 15.0,
+          "drill_cycle": null,
+          "reason": "Finish turn to final OD d=20.0mm"
+        }
+      ],
+      "machine_type": "milling",
+      "machine_selected": "milling \u2014 preferred machine (PREFERRED_MACHINE=milling)",
+      "process_sequence": [
+        {
+          "step": 1,
+          "operation": "contour_mill",
+          "machine": "milling",
+          "diameter_mm": 20.0,
+          "depth_mm": 15.0,
+          "drill_cycle": null,
+          "reason": "Contour mill end mill around boss OD d=20.0mm h=15.0mm"
+        }
+      ],
+      "setup_id": 1
+    },
+    {
+      "cluster_id": 5,
+      "seed_face_index": null,
+      "seed_type": "background",
+      "face_indices": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "feature_axis": null,
+      "depth": null,
+      "radii": [],
+      "is_principal_axis": null,
+      "face_count": 6,
+      "feature_type": "background",
+      "confidence": "high",
+      "machine_type": "none",
+      "machine_selected": "not a machined feature",
+      "process_sequence": [],
+      "setup_id": null
+    }
+  ],
+  "setups": [
+    {
+      "setup_id": 1,
+      "setup_type": "principal",
+      "spindle_direction": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "feature_axis": [
+        -0.0,
+        -1.0,
+        -0.0
+      ],
+      "axis_label": "+Y approach (top \u2014 default VMC position)",
+      "description": "Standard top-face setup. Clamp part with top face accessible to spindle. Machine all features in this setup before repositioning.",
+      "fixture_note": "Standard vise or fixture plate, jaws on side faces.",
+      "rotation_from_default": null,
+      "cluster_ids": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "operation_count": 6,
+      "machining_sequence": [
+        {
+          "cluster_id": 1,
+          "feature_type": "boss",
+          "operations": [
+            "contour_mill"
+          ]
+        },
+        {
+          "cluster_id": 2,
+          "feature_type": "boss",
+          "operations": [
+            "contour_mill"
+          ]
+        },
+        {
+          "cluster_id": 3,
+          "feature_type": "boss",
+          "operations": [
+            "contour_mill"
+          ]
+        },
+        {
+          "cluster_id": 4,
+          "feature_type": "boss",
+          "operations": [
+            "contour_mill"
+          ]
+        },
+        {
+          "cluster_id": 0,
+          "feature_type": "large_bore",
+          "operations": [
+            "face_mill",
+            "circular_interp"
+          ]
+        }
+      ]
+    }
+  ],
+  "setup_count": 1
+}

@@ -1,0 +1,249 @@
+{
+  "schema_version": 1,
+  "ruleset_id": "label_taxonomy_mfcad_pp_v1",
+  "updated_at": "2026-04-14",
+  "description": "Maps MFCAD++ per-face label IDs (feature_labels.txt) to ShiaanX internal feature_type strings used by classify_features.py / process_selection.py. Use for supervised training and evaluation; runtime loader can be added later.",
+  "dataset": {
+    "name": "MFCAD++",
+    "label_file_relative": "Dataset/MFCAD_dataset/MFCAD++_dataset/feature_labels.txt",
+    "id_range_inclusive": [0, 24]
+  },
+  "internal_types_reference": {
+    "from_classify_features": [
+      "through_hole",
+      "through_hole_angled",
+      "blind_hole",
+      "blind_hole_angled",
+      "counterbore",
+      "counterbore_angled",
+      "large_bore",
+      "large_bore_angled",
+      "boss",
+      "boss_angled",
+      "slot",
+      "slot_angled",
+      "pocket",
+      "pocket_angled",
+      "planar_face",
+      "background",
+      "unknown",
+      "unknown_bore"
+    ],
+    "process_selection_only": [
+      "chamfer",
+      "chamfer_angled",
+      "tapped_hole",
+      "tapped_hole_angled"
+    ],
+    "sheet7_synthetic_until_classified": [
+      "triangular_passage",
+      "rectangular_passage",
+      "six_sided_passage",
+      "oring_groove",
+      "round_feature",
+      "mfcad_unmapped"
+    ]
+  },
+  "mappings": [
+    {
+      "mfcad_id": 0,
+      "mfcad_name": "Chamfer",
+      "internal_feature_type": "chamfer",
+      "process_selection_ready": true,
+      "classify_features_emits": false,
+      "warnings": "MFCAD++ labels chamfers; geometry pipeline may not emit chamfer yet — use labels for ML supervision."
+    },
+    {
+      "mfcad_id": 1,
+      "mfcad_name": "Through hole",
+      "internal_feature_type": "through_hole",
+      "process_selection_ready": true,
+      "classify_features_emits": true,
+      "warnings": null
+    },
+    {
+      "mfcad_id": 2,
+      "mfcad_name": "Triangular passage",
+      "internal_feature_type": "triangular_passage",
+      "process_selection_ready": false,
+      "classify_features_emits": false,
+      "warnings": "No dedicated process rule or classifier output yet — downstream manual_review until passage family is modeled."
+    },
+    {
+      "mfcad_id": 3,
+      "mfcad_name": "Rectangular passage",
+      "internal_feature_type": "rectangular_passage",
+      "process_selection_ready": false,
+      "classify_features_emits": false,
+      "warnings": null
+    },
+    {
+      "mfcad_id": 4,
+      "mfcad_name": "6-sided passage",
+      "internal_feature_type": "six_sided_passage",
+      "process_selection_ready": false,
+      "classify_features_emits": false,
+      "warnings": null
+    },
+    {
+      "mfcad_id": 5,
+      "mfcad_name": "Triangular through slot",
+      "internal_feature_type": "slot",
+      "process_selection_ready": false,
+      "classify_features_emits": true,
+      "warnings": "process_selection.py has no slot branch yet — currently falls through to manual_review."
+    },
+    {
+      "mfcad_id": 6,
+      "mfcad_name": "Rectangular through slot",
+      "internal_feature_type": "slot",
+      "process_selection_ready": false,
+      "classify_features_emits": true,
+      "warnings": "Same as id 5 — slot milling rules pending in process_selection."
+    },
+    {
+      "mfcad_id": 7,
+      "mfcad_name": "Circular through slot",
+      "internal_feature_type": "slot",
+      "process_selection_ready": false,
+      "classify_features_emits": true,
+      "warnings": null
+    },
+    {
+      "mfcad_id": 8,
+      "mfcad_name": "Rectangular through step",
+      "internal_feature_type": "pocket",
+      "process_selection_ready": false,
+      "classify_features_emits": true,
+      "warnings": "Step vs pocket distinction is approximate; process_selection has no pocket branch yet — manual_review today."
+    },
+    {
+      "mfcad_id": 9,
+      "mfcad_name": "2-sided through step",
+      "internal_feature_type": "pocket",
+      "process_selection_ready": false,
+      "classify_features_emits": true,
+      "warnings": null
+    },
+    {
+      "mfcad_id": 10,
+      "mfcad_name": "Slanted through step",
+      "internal_feature_type": "pocket_angled",
+      "process_selection_ready": false,
+      "classify_features_emits": true,
+      "warnings": null
+    },
+    {
+      "mfcad_id": 11,
+      "mfcad_name": "O-ring",
+      "internal_feature_type": "oring_groove",
+      "process_selection_ready": false,
+      "classify_features_emits": false,
+      "warnings": "Treat as groove family; needs dedicated geometry + process rules."
+    },
+    {
+      "mfcad_id": 12,
+      "mfcad_name": "Blind hole",
+      "internal_feature_type": "blind_hole",
+      "process_selection_ready": true,
+      "classify_features_emits": true,
+      "warnings": null
+    },
+    {
+      "mfcad_id": 13,
+      "mfcad_name": "Triangular pocket",
+      "internal_feature_type": "pocket",
+      "process_selection_ready": false,
+      "classify_features_emits": true,
+      "warnings": "process_selection pocket branch not wired — manual_review today."
+    },
+    {
+      "mfcad_id": 14,
+      "mfcad_name": "Rectangular pocket",
+      "internal_feature_type": "pocket",
+      "process_selection_ready": false,
+      "classify_features_emits": true,
+      "warnings": null
+    },
+    {
+      "mfcad_id": 15,
+      "mfcad_name": "6-sided pocket",
+      "internal_feature_type": "pocket",
+      "process_selection_ready": false,
+      "classify_features_emits": true,
+      "warnings": null
+    },
+    {
+      "mfcad_id": 16,
+      "mfcad_name": "Circular end pocket",
+      "internal_feature_type": "pocket",
+      "process_selection_ready": false,
+      "classify_features_emits": true,
+      "warnings": null
+    },
+    {
+      "mfcad_id": 17,
+      "mfcad_name": "Rectangular blind slot",
+      "internal_feature_type": "slot",
+      "process_selection_ready": false,
+      "classify_features_emits": true,
+      "warnings": "Blind slot mapped to slot family for training; milling sequence TBD."
+    },
+    {
+      "mfcad_id": 18,
+      "mfcad_name": "Vertical circular end blind slot",
+      "internal_feature_type": "slot",
+      "process_selection_ready": false,
+      "classify_features_emits": true,
+      "warnings": null
+    },
+    {
+      "mfcad_id": 19,
+      "mfcad_name": "Horizontal circular end blind slot",
+      "internal_feature_type": "slot",
+      "process_selection_ready": false,
+      "classify_features_emits": true,
+      "warnings": null
+    },
+    {
+      "mfcad_id": 20,
+      "mfcad_name": "Triangular blind step",
+      "internal_feature_type": "pocket",
+      "process_selection_ready": false,
+      "classify_features_emits": true,
+      "warnings": null
+    },
+    {
+      "mfcad_id": 21,
+      "mfcad_name": "Circular blind step",
+      "internal_feature_type": "pocket",
+      "process_selection_ready": false,
+      "classify_features_emits": true,
+      "warnings": null
+    },
+    {
+      "mfcad_id": 22,
+      "mfcad_name": "Rectangular blind step",
+      "internal_feature_type": "pocket",
+      "process_selection_ready": false,
+      "classify_features_emits": true,
+      "warnings": null
+    },
+    {
+      "mfcad_id": 23,
+      "mfcad_name": "Round",
+      "internal_feature_type": "round_feature",
+      "process_selection_ready": false,
+      "classify_features_emits": false,
+      "warnings": "MFCAD 'Round' is ambiguous (fillet vs boss); review per part or split label in a future taxonomy revision."
+    },
+    {
+      "mfcad_id": 24,
+      "mfcad_name": "Stock",
+      "internal_feature_type": "background",
+      "process_selection_ready": true,
+      "classify_features_emits": true,
+      "warnings": null
+    }
+  ]
+}

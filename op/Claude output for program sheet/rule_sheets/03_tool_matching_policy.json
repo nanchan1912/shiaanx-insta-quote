@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "ruleset_id": "tool_matching_policy_v1",
+  "updated_at": "2026-04-14",
+  "description": "How requested diameters from process_selection map to catalogue tools and DB queries — mirrors 7. tool_selection.py. Tool geometry and per-tool Vc/fz stay in 7a. tool_database.json.",
+  "pipeline_stage": "7. tool_selection.py",
+  "database": {
+    "default_path_relative": "7a. tool_database.json",
+    "material_aliases_key": "material_aliases"
+  },
+  "tolerances_mm": {
+    "drill_exact_match": 0.01,
+    "counterbore_endmill_exact": 0.05
+  },
+  "diameter_resolution": {
+    "circular_interp": {
+      "target_fraction_of_bore_diameter": 0.45,
+      "rule": "Target tool D = bore_D × fraction; pick standard end mill size < bore_D minimizing |s − target|"
+    },
+    "contour_mill_boss": {
+      "target_fraction_of_boss_diameter": 0.8,
+      "rule": "Pick standard end mill < boss_D minimizing |s − target|; if none, smallest contour_mill in DB"
+    },
+    "counterbore_mill": {
+      "rule": "Prefer standard end mill within counterbore_exact_tol of cb_D; else largest standard ≤ cb_D"
+    },
+    "corner_r_pass": {
+      "max_diameter_mm": "2 × internal_corner_radius from process_selection",
+      "rule": "Largest standard end mill ≤ max_diameter; else smallest available with warning"
+    },
+    "face_mill": {
+      "rule": "Smallest face_mill with diameter_mm ≥ feature_diameter; if feature unknown, smallest face mill; if feature larger than all, largest + multi-pass note"
+    },
+    "spot_drill": {
+      "rule": "Smallest tool where locates_holes_up_to_mm ≥ required_dia; operations spot_drill or center_drill; fallback largest spot/center with warning"
+    },
+    "twist_drill": {
+      "rule": "Exact DB match within drill_exact_match; else nearest standard_drill_sizes_mm with SUBSTITUTION note"
+    },
+    "chamfer_mill": {
+      "default_feature_diameter_mm_if_missing": 6.0,
+      "rule": "Smallest chamfer_mill with diameter_mm ≥ feature diameter"
+    },
+    "slot_mill": {
+      "rule": "Smallest slot_mill with diameter_mm ≥ slot width; resolution reuses counterbore-style standard list for non-slot fallback in code path — prefer slot_mill operation in DB"
+    },
+    "tap_rh": {
+      "rule": "tool_dia = nominal thread diameter; exact match to tap tool in DB; feed must equal pitch at CAM"
+    },
+    "boring_bar": {
+      "rule": "tool_dia = requested final bore diameter from step"
+    }
+  },
+  "database_query_policy": {
+    "spot_drill_db_operations": ["spot_drill", "center_drill"],
+    "drill_operations_nearest_match": [
+      "twist_drill",
+      "micro_drill",
+      "pilot_drill",
+      "core_drill",
+      "spot_drill",
+      "center_drill",
+      "boring_bar",
+      "chamfer_mill",
+      "tap_rh"
+    ],
+    "mill_operations_smallest_fitting": {
+      "rule": "Candidates with diameter_mm ≥ required − drill_exact_tol; pick min diameter; else nearest",
+      "note": "Applies to end mills, face mills, etc. per _query_tool()"
+    },
+    "no_tool_steps": ["fixture_rotation", "manual_review"]
+  },
+  "warnings": [
+    "NOT_FOUND step handling and ADD TO DATABASE messages are emitted in Python when no DB candidate exists.",
+    "LIVE (applied at import via _apply_tool_matching_policy): tolerances_mm.drill_exact_match, tolerances_mm.counterbore_endmill_exact, diameter_resolution.circular_interp.target_fraction, diameter_resolution.contour_mill_boss.target_fraction.",
+    "DOCUMENTATION ONLY (not yet globals): database_query_policy.spot_drill_db_operations, drill_operations_nearest_match, no_tool_steps — these policies are hardcoded inside functions in tool_selection.py, not module-level globals. Promote them to globals first, then extend _apply_tool_matching_policy to wire them."
+  ]
+}

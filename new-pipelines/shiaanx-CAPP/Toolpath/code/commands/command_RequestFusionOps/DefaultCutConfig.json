@@ -1,0 +1,73 @@
+{
+    "version": "0.10.0",
+    "data": {
+        "selectedBundleIndex": 0,
+        "bundles": [
+            {
+                "name": "Generic Aluminum",
+                "preset_naming": {
+                    "tp_bore_finish": [
+                        "Alu_bore_finishing",
+                        "AluWrought_Bore_Finish"
+                    ],
+                    "tp_face": [
+                        "Alu_facing",
+                        "AluWrought_Finish_Face",
+                        "AluWrought_Face_Finish"
+                    ],
+                    "tp_face_rough": [
+                        "Alu_facing",
+                        "AluWrought_Face_Rough"
+                    ],
+                    "tp_floor_finish": [
+                        "Alu_facing",
+                        "Alu_floor_finishing",
+                        "AluWrought_Floor_Finish"
+                    ],
+                    "tp_wall_finish": [
+                        "Alu_wall_finishing",
+                        "AluWrought_Wall_Finish"
+                    ],
+                    "tp_traditional_rough": [
+                        "Alu_light_roughing", 
+                        "AluWrought_Traditional_Rough"
+                    ],
+                    "tp_special": [
+                        "Alu_keyseat",
+                        "Alu_chamfer",
+                        "tapping",
+                        "AluWrought_Chamfer",
+                        "AluWrought_Keyseat",
+                        "AluWrought_Tap"
+                    ],
+                    "tp_surface": [
+                        "Alu_surfacing",
+                        "AluWrought_Surface"
+                    ],
+                    "tp_adaptive_rough": [
+                        "Alu_heavy_roughing",
+                        "AluWrought_Adaptive_Rough"
+                    ],
+                    "tp_bore_rough": [
+                        "Alu_bore_roughing",
+                        "AluWrought_Bore_Rough"
+                    ],
+                    "tp_slot": [
+                        "Alu_slotting",
+                        "AluWrought_Slot"
+                    ],
+                    "tp_engrave": [
+                        "AluWrought_Engrave"
+                    ],
+                    "tp_drill": [
+                        "Aluminum - Drilling",
+                        "AluWrought_Drill"
+                    ]
+                },
+                "selectedToollibURLs": [
+                    "toollibraryroot://Local/Toolpath Default - Do Not Edit"
+                ]
+            }
+        ]
+    }
+}

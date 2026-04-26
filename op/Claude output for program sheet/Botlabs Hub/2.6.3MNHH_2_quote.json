@@ -1,0 +1,232 @@
+﻿{
+  "quote_version": "2.0",
+  "generated_at": "2026-04-26T13:39:05+00:00",
+  "currency": "INR",
+  "quantity": 1,
+  "material": "aluminium",
+  "quote_inputs": {
+    "features_supplied": true,
+    "rfq_supplied": false,
+    "inspection_level": "cmm",
+    "surface_finishes": [],
+    "packaging": "standard_box",
+    "shipping": "standard_ground"
+  },
+  "derived_context": {
+    "part": {
+      "setup_count": 4,
+      "quantity": 1,
+      "bbox_mm": {
+        "x": 30.877885,
+        "y": 12.8,
+        "z": 11.916731
+      },
+      "max_dimension_mm": 30.877885,
+      "surface_area_proxy_mm2": 1831.46906838787
+    },
+    "stock": {
+      "shape": "block",
+      "size_class": "small",
+      "stock_dims_mm": {
+        "x": 36.878,
+        "y": 18.8,
+        "z": 15.917
+      },
+      "part_volume_mm3": 742.027,
+      "stock_volume_mm3": 11035.137,
+      "part_mass_kg": 0.002,
+      "stock_mass_kg": 0.0298,
+      "removed_mass_kg": 0.0278,
+      "price_per_kg": 320.0
+    },
+    "processes": {
+      "milling_3axis": {
+        "family": "milling_3axis",
+        "cycle_time_min": 3.267,
+        "step_count": 48,
+        "setup_ids": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "operations": {
+          "spot_drill": 7,
+          "twist_drill": 7,
+          "counterbore_mill": 12,
+          "face_mill": 1,
+          "circular_interp": 1,
+          "contour_mill": 12,
+          "pocket_mill": 2,
+          "slot_mill": 6
+        },
+        "feature_types": {
+          "through_hole": 4,
+          "counterbore": 12,
+          "counterbore_angled": 8,
+          "blind_hole": 2,
+          "large_bore": 2,
+          "boss": 12,
+          "pocket": 2,
+          "slot": 6
+        },
+        "setup_count": 4
+      }
+    },
+    "signals": {
+      "total_steps": 48,
+      "substitutions": 4,
+      "rpm_capped": 44,
+      "tool_not_found": 2,
+      "deep_peck_ops": 2,
+      "warnings": 0
+    }
+  },
+  "line_items": [
+    {
+      "category": "material",
+      "code": "raw_material",
+      "description": "Raw material (aluminium, block stock)",
+      "cost": 9.53,
+      "quantity": 0.0298,
+      "unit": "kg",
+      "unit_price": 320.0,
+      "basis": "per_batch",
+      "source": "existing quote_config baseline",
+      "details": {
+        "size_class": "small",
+        "stock_dims_mm": {
+          "x": 36.878,
+          "y": 18.8,
+          "z": 15.917
+        },
+        "part_mass_kg": 0.002,
+        "stock_mass_kg_per_part": 0.0298,
+        "removed_mass_kg_per_part": 0.0278,
+        "quantity": 1
+      }
+    },
+    {
+      "category": "machining",
+      "code": "milling_3axis",
+      "description": "CNC Machining 3-axis",
+      "cost": 2821.78,
+      "quantity": 0.054,
+      "unit": "hr",
+      "unit_price": 400.0,
+      "basis": "cycle_time + setups",
+      "source": "code-ass1.xlsx manual quote workbook",
+      "details": {
+        "setup_count": 4,
+        "setup_cost_per_setup": 700.0,
+        "cycle_time_min": 3.267,
+        "step_count": 48,
+        "operations": {
+          "spot_drill": 7,
+          "twist_drill": 7,
+          "counterbore_mill": 12,
+          "face_mill": 1,
+          "circular_interp": 1,
+          "contour_mill": 12,
+          "pocket_mill": 2,
+          "slot_mill": 6
+        },
+        "feature_types": {
+          "through_hole": 4,
+          "counterbore": 12,
+          "counterbore_angled": 8,
+          "blind_hole": 2,
+          "large_bore": 2,
+          "boss": 12,
+          "pocket": 2,
+          "slot": 6
+        }
+      }
+    },
+    {
+      "category": "engineering",
+      "code": "cam_programming",
+      "description": "CAM Programming",
+      "cost": 644.58,
+      "quantity": 0.921,
+      "unit": "hr",
+      "unit_price": 700.0,
+      "basis": "complexity weighted",
+      "source": "internal baseline; intentionally conservative",
+      "details": {
+        "base_minutes": 8.0,
+        "minutes_per_setup": 4.0,
+        "minutes_per_unique_operation": 1.5,
+        "weighted_features": 55.0,
+        "unique_operation_count": 8,
+        "total_minutes": 55.25
+      }
+    },
+    {
+      "category": "inspection",
+      "code": "cmm",
+      "description": "CMM Inspection",
+      "cost": 4030.0,
+      "quantity": 3.03,
+      "unit": "hr",
+      "unit_price": 1000.0,
+      "basis": "per_batch",
+      "source": "code-ass1.xlsx manual quote workbook",
+      "details": {
+        "setup_cost": 1000.0,
+        "inspection_level": "cmm",
+        "setup_count": 4,
+        "feature_count": 21
+      }
+    },
+    {
+      "category": "logistics",
+      "code": "standard_box",
+      "description": "Packaging",
+      "cost": 500.0,
+      "basis": "per_batch",
+      "source": "code-ass1.xlsx manual quote workbook",
+      "details": {
+        "size_class": "small"
+      }
+    },
+    {
+      "category": "logistics",
+      "code": "standard_ground",
+      "description": "Logistics",
+      "cost": 500.0,
+      "basis": "per_batch",
+      "source": "code-ass1.xlsx manual quote workbook",
+      "details": {
+        "size_class": "small"
+      }
+    }
+  ],
+  "category_totals": {
+    "material": 9.53,
+    "machining": 2821.78,
+    "engineering": 644.58,
+    "inspection": 4030.0,
+    "logistics": 1000.0
+  },
+  "totals": {
+    "batch_total": 8505.89,
+    "unit_price": 8505.89
+  },
+  "confidence": 0.54,
+  "risk_notes": [
+    "No surface finish specified; quote assumes no outsourced finishing.",
+    "Inspection level not specified; auto-selected default inspection.",
+    "Shipping method not specified; standard shipping assumption used.",
+    "Some process steps are missing tool matches in the tool database.",
+    "Tool substitutions were used in process planning.",
+    "Multiple operations are RPM-capped; actual cycle time may drift.",
+    "High setup count increases quoting uncertainty.",
+    "Price book is 33 days old; volatile rates may need refresh."
+  ],
+  "price_book": {
+    "path": "D:\\insta-quote\\op\\Claude output for program sheet\\quote_price_book.json",
+    "version": "2026-03-24-baseline",
+    "updated_at": "2026-03-24T08:43:10+00:00"
+  }
+}

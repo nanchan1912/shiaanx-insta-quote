@@ -1,0 +1,13 @@
+name: occ
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pythonocc-core
+  - pip
+  - pip:
+      - numpy==2.2.6
+      - networkx==3.4.2
+      - reportlab==4.4.10
+      - matplotlib==3.10.8
+      - vtk==9.5.2

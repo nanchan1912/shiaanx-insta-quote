@@ -24,6 +24,8 @@ from werkzeug.utils import secure_filename
 # Add the pipeline directory to path
 SCRIPT_DIR = Path(__file__).parent.resolve()
 PIPELINE_DIR = SCRIPT_DIR / "op" / "Claude output for program sheet"
+PIPELINE_BASE_MODULES = ("OCC", "numpy")
+PIPELINE_REQUIRED_MODULES = ("OCC", "networkx", "numpy")
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -41,20 +43,51 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def find_python_with_occ() -> str:
-    """Find Python interpreter with OCC support."""
-    # Check environment variable first
-    override = os.environ.get('INSTA_QUOTE_OCC_PYTHON', '').strip()
-    if override and Path(override).exists():
-        return override
-    
-    # Check if current Python has OCC
+def _current_python_missing_modules(module_names: tuple[str, ...]) -> list[str]:
+    missing = []
+    for module_name in module_names:
+        try:
+            __import__(module_name)
+        except ImportError:
+            missing.append(module_name)
+    return missing
+
+
+def _python_supports_modules(python_exe: str, module_names: tuple[str, ...]) -> bool:
+    if not python_exe or not Path(python_exe).exists():
+        return False
+
+    cmd = [
+        python_exe,
+        "-c",
+        (
+            "import importlib, sys; "
+            "mods = sys.argv[1:]; "
+            "[importlib.import_module(m) for m in mods]"
+        ),
+        *module_names,
+    ]
     try:
-        import OCC
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
+def find_python_with_occ() -> str:
+    """Find a Python interpreter that can run the upgraded pipeline."""
+    override = os.environ.get('INSTA_QUOTE_OCC_PYTHON', '').strip()
+    if _python_supports_modules(override, PIPELINE_REQUIRED_MODULES):
+        return override
+
+    if not _current_python_missing_modules(PIPELINE_REQUIRED_MODULES):
         return sys.executable
-    except ImportError:
-        pass
-    
+
     # Check common conda env locations
     candidates = [
         Path.home() / 'miniconda3' / 'envs' / 'occ' / 'python.exe',
@@ -63,12 +96,21 @@ def find_python_with_occ() -> str:
         Path.home() / 'anaconda3' / 'envs' / 'occ' / 'python.exe',
         Path(r'C:\Users\Siddhant Gupta\miniconda3\envs\occ\python.exe'),
     ]
-    
+
     for candidate in candidates:
-        if candidate.exists():
+        if _python_supports_modules(str(candidate), PIPELINE_REQUIRED_MODULES):
             return str(candidate)
-    
-    # Fall back to current Python and hope for the best
+
+    if _python_supports_modules(override, PIPELINE_BASE_MODULES):
+        return override
+
+    if not _current_python_missing_modules(PIPELINE_BASE_MODULES):
+        return sys.executable
+
+    for candidate in candidates:
+        if _python_supports_modules(str(candidate), PIPELINE_BASE_MODULES):
+            return str(candidate)
+
     return sys.executable
 
 
@@ -85,13 +127,16 @@ def run_pipeline_step(python_exe: str, script_name: str, args: list, cwd: Path) 
             text=True,
             timeout=120  # 2 minute timeout per step
         )
-        
+
         if result.returncode != 0:
-            return False, f"{script_name} failed: {result.stderr}"
-        
+            detail = (result.stderr or result.stdout or "").strip()
+            if not detail:
+                detail = f"exit code {result.returncode}"
+            return False, f"{script_name} failed: {detail}"
+
         return True, None
     except subprocess.TimeoutExpired:
-        return False, f"{script_name} timed out"
+        return False, f"{script_name} timed out after 120s"
     except Exception as e:
         return False, f"{script_name} error: {str(e)}"
 
@@ -152,15 +197,18 @@ def process_step_file(step_path: Path, material: str = "mild_steel", qty: int = 
             text=True,
             timeout=60
         )
-        
+
         if result.returncode != 0:
-            return {'error': f'Quote generation failed: {result.stderr}'}
+            detail = (result.stderr or result.stdout or "").strip()
+            if not detail:
+                detail = f"exit code {result.returncode}"
+            return {'error': f'Quote generation failed: {detail}'}
     except Exception as e:
         return {'error': f'Quote generation error: {str(e)}'}
     
     # Read and return the quote JSON
     try:
-        with open(f_quote, 'r', encoding='utf-8') as f:
+        with open(f_quote, 'r', encoding='utf-8-sig') as f:
             quote_data = json.load(f)
         return quote_data
     except Exception as e:
@@ -182,7 +230,7 @@ def fallback_process_simulation(step_path: Path, material: str = "mild_steel", q
     for demo_file in demo_files:
         if demo_file.exists():
             try:
-                with open(demo_file, 'r', encoding='utf-8') as f:
+                with open(demo_file, 'r', encoding='utf-8-sig') as f:
                     return json.load(f)
             except:
                 pass
@@ -476,18 +524,17 @@ def quote_to_state(quote_data: dict) -> dict:
 def health():
     """Health check endpoint."""
     python_exe = find_python_with_occ()
-    has_occ = False
-    try:
-        import OCC
-        has_occ = True
-    except ImportError:
-        pass
-    
+    current_missing = _current_python_missing_modules(PIPELINE_REQUIRED_MODULES)
+    selected_python_ready = _python_supports_modules(python_exe, PIPELINE_REQUIRED_MODULES)
+
     return jsonify({
-        'status': 'ok',
+        'status': 'ok' if selected_python_ready else 'degraded',
         'pipeline_dir': str(PIPELINE_DIR),
         'python_exe': python_exe,
-        'occ_available': has_occ,
+        'required_modules': list(PIPELINE_REQUIRED_MODULES),
+        'current_python': sys.executable,
+        'current_python_missing_modules': current_missing,
+        'selected_python_ready': selected_python_ready,
         'pipeline_scripts_exist': {
             'extract_features': (PIPELINE_DIR / 'extract_features.py').exists(),
             'cluster_features': (PIPELINE_DIR / 'cluster_features.py').exists(),
@@ -497,7 +544,13 @@ def health():
             'tool_selection': (PIPELINE_DIR / 'tool_selection.py').exists(),
             'parameter_calculation': (PIPELINE_DIR / 'parameter_calculation.py').exists(),
             'quote_estimation': (PIPELINE_DIR / 'quote_estimation.py').exists(),
-        }
+        },
+        'pipeline_assets_exist': {
+            'tool_database': (PIPELINE_DIR / 'tool_database.json').exists(),
+            'quote_price_book': (PIPELINE_DIR / 'quote_price_book.json').exists(),
+            'rule_sheets': (PIPELINE_DIR / 'rule_sheets').exists(),
+            'models': (PIPELINE_DIR / 'models').exists(),
+        },
     })
 
 
@@ -516,7 +569,7 @@ def test_pipeline():
     for demo_file in demo_files:
         if demo_file.exists():
             try:
-                with open(demo_file, 'r', encoding='utf-8') as f:
+                with open(demo_file, 'r', encoding='utf-8-sig') as f:
                     quote_data = json.load(f)
                 state = quote_to_state(quote_data)
                 return jsonify({

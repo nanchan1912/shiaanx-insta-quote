@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "ruleset_id": "workholding_v1",
+  "updated_at": "2026-04-14",
+  "description": "Per-setup workholding templates keyed by spindle direction and setup type — extracted from _build_workholding() in 5. setup_planning.py. jaw_opening_mm uses bbox extent in the jaw opening direction when bbox is present.",
+  "pipeline_stage": "5. setup_planning.py",
+  "datum_cascade": {
+    "datum_from_setup": "null for setup 1; else previous setup index (setup_index - 1)"
+  },
+  "angled_setup": {
+    "when": "setup_type == angled and rotation dict present",
+    "template": {
+      "type": "sine_plate",
+      "clamp_faces": ["+X", "-X"],
+      "rest_face": "-Y",
+      "clearance_faces": ["+Y"],
+      "jaw_opening_mm_from_bbox": "x_dim (xmax - xmin)",
+      "notes_pattern": "Sine plate angle + rotation_axis_label; verify with indicator"
+    }
+  },
+  "principal_spindle_templates": [
+    {
+      "match": "abs(spindle_y) > 0.9 and spindle_y > 0",
+      "label_hint": "+Y approach (top)",
+      "type": null,
+      "type_setup_1": "vise",
+      "type_later": "fixture_plate",
+      "clamp_faces": ["+X", "-X"],
+      "rest_face": "-Y",
+      "clearance_faces": ["+Y"],
+      "jaw_opening_mm_from_bbox": "x_dim"
+    },
+    {
+      "match": "abs(spindle_y) > 0.9 and spindle_y < 0",
+      "label_hint": "-Y approach (bottom / flipped)",
+      "type": "step_jaw_vise",
+      "clamp_faces": ["+X", "-X"],
+      "rest_face": "+Y",
+      "clearance_faces": ["-Y"],
+      "jaw_opening_mm_from_bbox": "x_dim"
+    },
+    {
+      "match": "abs(spindle_x) > 0.9",
+      "label_hint": "±X side approach",
+      "type": "angle_plate",
+      "clamp_faces": ["-Y", "+Z"],
+      "rest_face": "-Y",
+      "clearance_faces": ["+X if spindle_x > 0 else -X"],
+      "jaw_opening_mm_from_bbox": "z_dim"
+    },
+    {
+      "match": "abs(spindle_z) > 0.9",
+      "label_hint": "±Z front/rear approach",
+      "type": "angle_plate",
+      "clamp_faces": ["-Y", "+X"],
+      "rest_face": "-Y",
+      "clearance_faces": ["+Z if spindle_z > 0 else -Z"],
+      "jaw_opening_mm_from_bbox": "x_dim"
+    }
+  ],
+  "fallback": {
+    "type": "custom_fixture",
+    "notes": "Custom fixture — consult manufacturing engineer",
+    "clamp_faces": [],
+    "rest_face": null,
+    "clearance_faces": [],
+    "jaw_opening_mm": null
+  },
+  "warnings": [
+    "Human-readable description and fixture_note strings are still built in _build_description(); this JSON is the structured policy only.",
+    "Python remains authoritative until setup_planning loads this file."
+  ]
+}

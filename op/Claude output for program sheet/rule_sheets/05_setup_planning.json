@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "ruleset_id": "setup_planning_v1",
+  "updated_at": "2026-04-14",
+  "description": "VMC convention, axis grouping, setup ordering, spindle vs feature axis, WCS assignment, corner-zero heuristic, and stock carryover — mirrors 5. setup_planning.py. Workholding device choice is summarized here but detailed face templates are in 06_workholding.json.",
+  "pipeline_stage": "5. setup_planning.py",
+  "vmc_convention": {
+    "default_spindle_direction_cad": [0, -1, 0],
+    "comment": "Default spindle points -Y (tool from +Y toward part). Feature axis is direction hole opens; spindle_direction = opposite of feature_axis per group."
+  },
+  "axis_parallel_tolerance": 1e-3,
+  "principal_axis_definition": "Unit vector aligns with ±X, ±Y, or ±Z within tolerance",
+  "same_setup_rule": "Clusters whose feature_axis are parallel and same direction (not anti-parallel) share one setup; anti-parallel = separate setups",
+  "grouping_algorithm": [
+    "Collect machinable clusters: not background, machine_type not none, has feature_axis",
+    "Planar and no-axis clusters assigned separately to best existing setup",
+    "Group by exact same-direction feature_axis using _are_same_direction",
+    "spindle_dir = normalize(-rep_axis)",
+    "Principal groups: setup_type principal; non-principal: setup_type angled + rotation_from_default"
+  ],
+  "axis_group_sort": {
+    "primary": "principal setups before angled",
+    "secondary": "descending cluster count within tie"
+  },
+  "setup_order_within_group": {
+    "machining_sequence": "Sort clusters by ascending process_sequence length then cluster_id"
+  },
+  "wcs": {
+    "sequence": ["G54", "G55", "G56", "G57", "G58", "G59"],
+    "assignment": "setup_id 1 → G54, etc., capped at G59"
+  },
+  "wcs_origin_corner_heuristic": {
+    "fraction_of_dimension": 0.02,
+    "rule": "Treat bounding box min as 'at CAD origin' if |min| < fraction × (max − min) for that axis pair used in the setup plane",
+    "reference": "AD-006 — corner zero keeps G-code positive when part at CAD origin"
+  },
+  "stock_state": {
+    "all_part_faces": ["+X", "-X", "+Y", "-Y", "+Z", "-Z"],
+    "setup_1_type": "raw_billet",
+    "later_setups": "previous_setup",
+    "machined_face_accumulation": "Union of workholding.clearance_faces from all prior setups"
+  },
+  "machinable_filters": {
+    "exclude_feature_types": ["background"],
+    "exclude_machine_types": ["none"],
+    "require_feature_axis_for_primary_grouping": true
+  },
+  "coord_system_optional": {
+    "module": "coord_system.py",
+    "rule": "If CoordSystem passed to plan_setups, machine-space annotations added; else CAD axes used as-is"
+  },
+  "warnings": [
+    "Full WCS coordinate formulas per spindle direction remain in _compute_wcs_origin(); this sheet captures thresholds and intent only.",
+    "LIVE (applied at import): vmc_convention.default_spindle_direction_cad, axis_parallel_tolerance, wcs.sequence, wcs_origin_corner_heuristic.fraction_of_dimension, stock_state.all_part_faces.",
+    "DOCUMENTATION ONLY (not yet globals): grouping_algorithm, axis_group_sort, setup_order_within_group, machinable_filters — these are fixed logic in plan_setups()."
+  ]
+}

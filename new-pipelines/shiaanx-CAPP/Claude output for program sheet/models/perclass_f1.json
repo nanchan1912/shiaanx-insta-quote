@@ -1,0 +1,155 @@
+{
+  "overall_accuracy": 0.660353184526566,
+  "per_class": {
+    "Chamfer": {
+      "precision": 0.69,
+      "recall": 0.544,
+      "f1": 0.608,
+      "support": 3492
+    },
+    "Through hole": {
+      "precision": 0.856,
+      "recall": 0.909,
+      "f1": 0.881,
+      "support": 3731
+    },
+    "Triangular passage": {
+      "precision": 0.279,
+      "recall": 0.188,
+      "f1": 0.224,
+      "support": 11021
+    },
+    "Rectangular passage": {
+      "precision": 0.346,
+      "recall": 0.389,
+      "f1": 0.366,
+      "support": 14765
+    },
+    "6-sided passage": {
+      "precision": 0.531,
+      "recall": 0.653,
+      "f1": 0.585,
+      "support": 21945
+    },
+    "Triangular through slot": {
+      "precision": 0.302,
+      "recall": 0.083,
+      "f1": 0.131,
+      "support": 2469
+    },
+    "Rectangular through slot": {
+      "precision": 0.34,
+      "recall": 0.091,
+      "f1": 0.143,
+      "support": 3961
+    },
+    "Circular through slot": {
+      "precision": 0.798,
+      "recall": 0.554,
+      "f1": 0.654,
+      "support": 1331
+    },
+    "Rectangular through step": {
+      "precision": 0.387,
+      "recall": 0.408,
+      "f1": 0.397,
+      "support": 6807
+    },
+    "2-sided through step": {
+      "precision": 0.575,
+      "recall": 0.672,
+      "f1": 0.62,
+      "support": 9869
+    },
+    "Slanted through step": {
+      "precision": 0.36,
+      "recall": 0.267,
+      "f1": 0.307,
+      "support": 6847
+    },
+    "O-ring": {
+      "precision": 0.793,
+      "recall": 0.812,
+      "f1": 0.803,
+      "support": 9765
+    },
+    "Blind hole": {
+      "precision": 0.683,
+      "recall": 0.663,
+      "f1": 0.673,
+      "support": 6389
+    },
+    "Triangular pocket": {
+      "precision": 0.499,
+      "recall": 0.48,
+      "f1": 0.489,
+      "support": 13033
+    },
+    "Rectangular pocket": {
+      "precision": 0.447,
+      "recall": 0.535,
+      "f1": 0.487,
+      "support": 16391
+    },
+    "6-sided pocket": {
+      "precision": 0.654,
+      "recall": 0.662,
+      "f1": 0.658,
+      "support": 21454
+    },
+    "Circular end pocket": {
+      "precision": 0.867,
+      "recall": 0.94,
+      "f1": 0.902,
+      "support": 15311
+    },
+    "Rectangular blind slot": {
+      "precision": 0.378,
+      "recall": 0.036,
+      "f1": 0.066,
+      "support": 3488
+    },
+    "Vertical circular end blind slot": {
+      "precision": 0.446,
+      "recall": 0.537,
+      "f1": 0.487,
+      "support": 2629
+    },
+    "Horizontal circular end blind slot": {
+      "precision": 0.766,
+      "recall": 0.543,
+      "f1": 0.636,
+      "support": 2192
+    },
+    "Triangular blind step": {
+      "precision": 0.789,
+      "recall": 0.509,
+      "f1": 0.619,
+      "support": 6765
+    },
+    "Circular blind step": {
+      "precision": 0.829,
+      "recall": 0.88,
+      "f1": 0.854,
+      "support": 6285
+    },
+    "Rectangular blind step": {
+      "precision": 0.373,
+      "recall": 0.485,
+      "f1": 0.422,
+      "support": 10113
+    },
+    "Round": {
+      "precision": 0.874,
+      "recall": 0.755,
+      "f1": 0.81,
+      "support": 1148
+    },
+    "Stock": {
+      "precision": 0.997,
+      "recall": 0.999,
+      "f1": 0.998,
+      "support": 57927
+    }
+  }
+}

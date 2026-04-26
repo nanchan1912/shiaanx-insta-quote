@@ -1,0 +1,47 @@
+{
+  "version": "0.4.3",
+  "data": {
+    "Generic Aluminum": {
+      "tp_bore_finish": [
+        "Alu_bore_finishing"
+      ],
+      "tp_face": [
+        "Alu_facing"
+      ],
+      "tp_face_rough": [
+        "Alu_facing"
+      ],
+      "tp_floor_finish": [
+        "Alu_facing",
+        "Alu_floor_finishing"
+      ],
+      "tp_wall_finish": [
+        "Alu_wall_finishing"
+      ],
+      "tp_traditional_rough": [
+        "Alu_light_roughing"
+      ],
+      "tp_special": [
+        "Alu_keyseat",
+        "Alu_chamfer",
+        "tapping"
+      ],
+      "tp_surface": [
+        "Alu_surfacing"
+      ],
+      "tp_adaptive_rough": [
+        "Alu_heavy_roughing"
+      ],
+      "tp_bore_rough": [
+        "Alu_bore_roughing"
+      ],
+      "tp_slot": [
+        "Alu_slotting"
+      ],
+      "tp_drill": [
+        "Aluminum - Drilling"
+      ],
+      "tp_engrave": []
+    }
+  }
+}

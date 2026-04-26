@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Options</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 13px;
+            margin: 0;
+            padding: 16px;
+            background-color: #f5f5f5;
+            color: #333;
+            min-width: 450px;
+        }
+
+        .options-container {
+            width: 100%;
+            min-width: 420px;
+        }
+
+        /* Category (top-level) styling */
+        .category {
+            margin-bottom: 20px;
+        }
+
+        .category-header {
+            font-weight: 700;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #0078d4;
+        }
+
+        .category-content {
+            margin-left: 0;
+        }
+
+        /* Group (sub-level) styling */
+        .group {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            padding: 14px;
+        }
+
+        .group-header {
+            font-weight: 600;
+            font-size: 13px;
+            color: #0078d4;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .option-row {
+            margin-bottom: 14px;
+        }
+
+        .option-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .option-label {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .option-label label {
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .option-tooltip {
+            font-size: 11px;
+            color: #666;
+            margin-top: 2px;
+            margin-bottom: 6px;
+        }
+
+        /* Checkbox styling */
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .checkbox-wrapper label {
+            font-size: 13px;
+        }
+
+        /* Text input styling */
+        .text-input-wrapper {
+            margin-top: 4px;
+        }
+
+        .text-input-wrapper label {
+            display: block;
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 4px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #0078d4;
+            box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.2);
+        }
+
+        input[type="text"]:disabled {
+            background-color: #f0f0f0;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        /* Select (dropdown) styling */
+        .select-wrapper {
+            margin-top: 4px;
+        }
+
+        .select-wrapper label {
+            display: block;
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 4px;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #fff;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 16px;
+            padding-right: 32px;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #0078d4;
+            box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.2);
+        }
+
+        select:disabled {
+            background-color: #f0f0f0;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        /* Button styling */
+        .button-row {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button.primary {
+            background-color: #0078d4;
+            color: #fff;
+        }
+
+        button.primary:hover {
+            background-color: #106ebe;
+        }
+
+        button.secondary {
+            background-color: #fff;
+            color: #333;
+            border: 1px solid #ccc;
+        }
+
+        button.secondary:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Status message */
+        .status-message {
+            margin-top: 12px;
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .status-message.success {
+            background-color: #dff6dd;
+            color: #107c10;
+            display: block;
+        }
+
+        .status-message.error {
+            background-color: #fde7e9;
+            color: #d13438;
+            display: block;
+        }
+
+        .status-message.warning {
+            background-color: #fff4ce;
+            color: #7a6400;
+            display: block;
+        }
+
+        /* Dependent fields styling */
+        .dependent-fields {
+            margin-left: 28px;
+            margin-top: 12px;
+            padding-left: 14px;
+            border-left: 3px solid #0078d4;
+        }
+
+        .dependent-fields.disabled {
+            opacity: 0.5;
+            border-left-color: #ccc;
+        }
+
+        .dependent-fields .option-row {
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="options-container">
+        <div id="optionsContent">
+            <!-- Options will be dynamically generated here -->
+        </div>
+
+        <div class="button-row">
+            <button class="primary" id="saveButton" title="Save all options">Save Options</button>
+            <button class="secondary" id="resetButton" title="Reset to last saved values">Reset</button>
+        </div>
+
+        <div id="statusMessage" class="status-message"></div>
+    </div>
+
+    <script src="OptionsTab.js"></script>
+</body>
+
+</html>

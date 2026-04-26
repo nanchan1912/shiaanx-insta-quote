@@ -91,6 +91,62 @@ CONTOUR_MILL_TOOL_FRACTION = 0.80
 # Tolerance for "exact" diameter match on drills (mm)
 DRILL_EXACT_TOL = 0.01
 
+# Tolerance for counterbore end-mill "exact" match (mm)
+COUNTERBORE_ENDMILL_EXACT_TOL = 0.05
+
+
+# ---------------------------------------------------------------------------
+# Rule sheet loader (Sheet 3: 03_tool_matching_policy.json)
+# ---------------------------------------------------------------------------
+_RULE_SHEET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'rule_sheets')
+_TOOL_POLICY_SHEET_PATH = os.path.join(_RULE_SHEET_DIR, '03_tool_matching_policy.json')
+
+
+def load_tool_matching_policy_sheet(path: str = None) -> Optional[Dict]:
+    """
+    Load Sheet 3 tool matching policy (JSON). Returns dict or None.
+
+    Safe-by-default: if missing/invalid, keep hardcoded defaults.
+    """
+    p = path or _TOOL_POLICY_SHEET_PATH
+    if not os.path.exists(p):
+        return None
+    try:
+        with open(p, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def _apply_tool_matching_policy(policy: Dict) -> None:
+    global CIRC_INTERP_TOOL_FRACTION
+    global CONTOUR_MILL_TOOL_FRACTION
+    global DRILL_EXACT_TOL
+    global COUNTERBORE_ENDMILL_EXACT_TOL
+
+    if not isinstance(policy, dict):
+        return
+
+    tol = policy.get('tolerances_mm') or {}
+    if 'drill_exact_match' in tol:
+        DRILL_EXACT_TOL = float(tol['drill_exact_match'])
+    if 'counterbore_endmill_exact' in tol:
+        COUNTERBORE_ENDMILL_EXACT_TOL = float(tol['counterbore_endmill_exact'])
+
+    dia = policy.get('diameter_resolution') or {}
+    circ = dia.get('circular_interp') or {}
+    if 'target_fraction_of_bore_diameter' in circ:
+        CIRC_INTERP_TOOL_FRACTION = float(circ['target_fraction_of_bore_diameter'])
+
+    contour = dia.get('contour_mill_boss') or {}
+    if 'target_fraction_of_boss_diameter' in contour:
+        CONTOUR_MILL_TOOL_FRACTION = float(contour['target_fraction_of_boss_diameter'])
+
+
+_tool_policy = load_tool_matching_policy_sheet()
+if _tool_policy is not None:
+    _apply_tool_matching_policy(_tool_policy)
+
 
 # ---------------------------------------------------------------------------
 # Database loader
@@ -123,17 +179,20 @@ def _resolve_material(material: str, db: Dict) -> str:
 
 def _resolve_spot_drill_diameter(required_dia: float, db: Dict) -> Tuple[float, str]:
     """
-    Find the smallest spot drill whose locates_holes_up_to_mm >= required_dia.
+    Find the smallest spot/center drill whose locates_holes_up_to_mm >= required_dia.
     Returns (tool_diameter, note).
+    DB tools may be stored as 'center_drill' (metric Sandvik/Kennametal naming) or
+    'spot_drill' — accept both.
     """
     candidates = [
         t for t in db['tools']
-        if t.get('operation') == 'spot_drill'
+        if t.get('operation') in ('spot_drill', 'center_drill')
         and t.get('locates_holes_up_to_mm', 0) >= required_dia
     ]
     if not candidates:
-        # Fall back to largest available spot drill
-        all_spots = [t for t in db['tools'] if t.get('operation') == 'spot_drill']
+        # Fall back to largest available spot/center drill
+        all_spots = [t for t in db['tools']
+                     if t.get('operation') in ('spot_drill', 'center_drill')]
         if all_spots:
             best = max(all_spots, key=lambda t: t['diameter_mm'])
             return best['diameter_mm'], f'WARNING: no spot drill covers dia={required_dia}mm, using largest available {best["diameter_mm"]}mm'
@@ -234,7 +293,7 @@ def _resolve_endmill_for_counterbore(cb_dia: float, db: Dict) -> Tuple[float, st
     standard_sizes = db.get('standard_endmill_sizes_mm', [])
 
     # Prefer exact match
-    exact_candidates = [s for s in standard_sizes if abs(s - cb_dia) <= 0.05]
+    exact_candidates = [s for s in standard_sizes if abs(s - cb_dia) <= COUNTERBORE_ENDMILL_EXACT_TOL]
     if exact_candidates:
         return exact_candidates[0], ''
 
@@ -317,17 +376,26 @@ def _query_tool(operation: str, tool_diameter_mm: float,
     2. diameter must be within DRILL_EXACT_TOL for drills,
        or >= required for mills (use smallest that fits)
     3. material_params must contain the requested material
+
+    Special alias: 'spot_drill' also matches DB tools with operation='center_drill'
+    (metric catalogues use 'center_drill' for the same tool class).
     """
     material = _resolve_material(material, db)
+
+    # Alias: process_selection emits 'spot_drill'; DB stores tools as 'center_drill'
+    db_op_aliases = {
+        'spot_drill': ('spot_drill', 'center_drill'),
+    }
+    accepted_ops = db_op_aliases.get(operation, (operation,))
 
     candidates = []
     for tool in db['tools']:
         # Check operation match
         tool_op = tool.get('operation', '')
         if isinstance(tool_op, list):
-            op_match = operation in tool_op
+            op_match = any(a in tool_op for a in accepted_ops)
         else:
-            op_match = tool_op == operation
+            op_match = tool_op in accepted_ops
         if not op_match:
             continue
 
@@ -340,9 +408,10 @@ def _query_tool(operation: str, tool_diameter_mm: float,
     if not candidates:
         return None
 
-    # For drills and spot drills: find closest diameter match
+    # For drills and spot/center drills: find closest diameter match
     if operation in ('twist_drill', 'micro_drill', 'pilot_drill',
-                     'core_drill', 'spot_drill', 'boring_bar'):
+                     'core_drill', 'spot_drill', 'center_drill', 'boring_bar',
+                     'chamfer_mill', 'tap_rh'):
         exact = [t for t in candidates
                  if abs(t['diameter_mm'] - tool_diameter_mm) <= DRILL_EXACT_TOL]
         if exact:
@@ -449,6 +518,37 @@ def _assign_tool_to_step(step: Dict, cluster: Dict,
         # req_dia may be None (planar face) or feature diameter
         tool_dia, note = _resolve_facemill_diameter(req_dia, db)
         tool_notes += note
+
+    elif op == 'chamfer_mill':
+        # req_dia is the feature diameter; pick smallest chamfer mill that covers it
+        tool_dia = req_dia or 6.0   # default to 6mm if no diameter info
+        # round up to nearest available chamfer mill diameter
+        chamfer_tools = sorted(
+            [t for t in db['tools'] if t.get('operation') == 'chamfer_mill'],
+            key=lambda t: t['diameter_mm']
+        )
+        fitting = [t for t in chamfer_tools if t['diameter_mm'] >= tool_dia - 0.01]
+        tool_dia = fitting[0]['diameter_mm'] if fitting else (chamfer_tools[-1]['diameter_mm'] if chamfer_tools else tool_dia)
+        tool_notes += f'Chamfer mill selected for d={req_dia}mm feature'
+
+    elif op == 'slot_mill':
+        # req_dia is the slot width; pick smallest slot mill >= slot width
+        tool_dia, note = _resolve_endmill_for_counterbore(req_dia or 4.0, db)
+        # Override: look for slot_mill specifically, not end mill
+        slot_tools = sorted(
+            [t for t in db['tools'] if t.get('operation') == 'slot_mill'],
+            key=lambda t: t['diameter_mm']
+        )
+        fitting = [t for t in slot_tools if t['diameter_mm'] >= (req_dia or 0) - 0.01]
+        tool_dia = fitting[0]['diameter_mm'] if fitting else (slot_tools[-1]['diameter_mm'] if slot_tools else (req_dia or 4.0))
+        tool_notes += f'Slot mill selected for width={req_dia}mm'
+
+    elif op == 'tap_rh':
+        # req_dia is the nominal thread diameter — exact match to tap size
+        tool_dia = req_dia or 0
+        tool_notes = (f'Rigid tap M{round(tool_dia, 1):.0f} — '
+                      f'feed rate MUST equal thread pitch (G84 canned cycle). '
+                      f'Use tapping fluid or through-spindle coolant.')
 
     elif op == 'boring_bar':
         tool_dia = req_dia or 0

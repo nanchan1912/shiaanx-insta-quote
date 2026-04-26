@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "ruleset_id": "process_selection_v1",
+  "updated_at": "2026-04-14",
+  "description": "Diameter bands, DDR→drill cycle, stock-to-leave, RF/FINISH split, and tap drill table — mirrors 4. process_selection.py until a loader is wired.",
+  "pipeline_stage": "4. process_selection.py",
+  "preferred_machine": {
+    "value": "milling",
+    "allowed": ["milling", "turning", "both"],
+    "notes": "Boss and large_bore use this for primary vs alternate sequences; holes and planar_face always milling."
+  },
+  "drill_diameter_bands_mm": {
+    "micro_drill_max_exclusive": 1.0,
+    "twist_drill_max_inclusive": 13.0,
+    "core_drill_max_inclusive": 32.0,
+    "above_core_drill": "boring_bar_milling",
+    "micro_drill_rule": "d < micro_drill_max_exclusive → micro_drill only (no spot_drill)",
+    "twist_band_rule": "micro_drill_max_exclusive ≤ d ≤ twist_drill_max_inclusive → spot_drill then twist_drill",
+    "core_band_rule": "twist_drill_max_inclusive < d ≤ core_drill_max_inclusive → spot_drill, pilot_drill (60% of final D), core_drill",
+    "pilot_diameter_fraction_of_final": 0.6
+  },
+  "ddr_drill_cycle": {
+    "ddr_standard_max_inclusive": 3.0,
+    "ddr_peck_max_inclusive": 5.0,
+    "rules": [
+      "ddr is None or ddr ≤ ddr_standard_max_inclusive → standard",
+      "ddr ≤ ddr_peck_max_inclusive → peck",
+      "else → deep_peck"
+    ],
+    "ddr_definition": "depth / nominal_hole_diameter (through/blind inner bore)"
+  },
+  "boss_turning_min_diameter_mm": 6.0,
+  "boss_turning_note": "Below this diameter, milling contour is preferred when PREFERRED_MACHINE is milling.",
+  "material_stock_to_leave_mm": {
+    "default_xy": 0.1,
+    "default_z": 0.1,
+    "per_material": {
+      "aluminium_6061": { "xy": 0.1, "z": 0.1 },
+      "aluminium_6063": { "xy": 0.1, "z": 0.1 },
+      "aluminium_6082": { "xy": 0.1, "z": 0.1 },
+      "aluminium_7075": { "xy": 0.15, "z": 0.1 },
+      "aluminium_7050": { "xy": 0.15, "z": 0.1 },
+      "aluminium": { "xy": 0.1, "z": 0.1 },
+      "mild_steel": { "xy": 0.2, "z": 0.15 },
+      "steel": { "xy": 0.2, "z": 0.15 },
+      "stainless_steel": { "xy": 0.25, "z": 0.2 },
+      "stainless_steel_316": { "xy": 0.3, "z": 0.2 },
+      "titanium": { "xy": 0.15, "z": 0.1 },
+      "brass": { "xy": 0.1, "z": 0.1 }
+    },
+    "finish_passes": {
+      "stock_to_leave_xy": 0.0,
+      "stock_to_leave_z": 0.0
+    }
+  },
+  "face_mill_max_ap_mm": {
+    "default": 1.0,
+    "per_material": {
+      "aluminium": 2.0,
+      "aluminium_6061": 2.0,
+      "aluminium_6063": 2.0,
+      "aluminium_6082": 2.0,
+      "aluminium_7075": 1.5,
+      "aluminium_7050": 1.5,
+      "mild_steel": 1.0,
+      "steel": 1.0,
+      "stainless_steel": 0.5,
+      "stainless_steel_316": 0.5,
+      "titanium": 0.5,
+      "brass": 2.0
+    },
+    "rule": "If feature depth > max_ap for material, emit RF then FINISH face_mill passes."
+  },
+  "face_mill_subtypes": {
+    "description": "Subtypes for planar_face features, classified by surface context. Source: ShiaanX_Strategy_Rules_Final for face.xlsx (Gaurav, 2024-05-01).",
+    "subtypes": {
+      "full_surface": "Unobstructed flat surface — no bosses, holes, or slots breaking the face. Entry from outside the part boundary.",
+      "boss_surface": "Flat face sitting on top of a boss cluster — adjacent to boss walls on one or more sides. Use end mill rather than face mill for narrow widths.",
+      "interrupted": "Face broken by holes, slots, or pockets — tool crosses interrupted material. Use helical entry to avoid impact on re-entry."
+    },
+    "entry_method_by_subtype": {
+      "full_surface": "outside",
+      "boss_surface": "outside",
+      "interrupted": "helical"
+    },
+    "detection_rules": {
+      "boss_surface": "cluster is adjacent (shares edge) to one or more boss-type clusters",
+      "interrupted": "cluster has one or more hole/pocket/slot child features breaking the face plane",
+      "full_surface": "neither boss_surface nor interrupted conditions met"
+    }
+  },
+  "face_mill_width_bands_mm": {
+    "description": "Width-based tool selection for face features. Width = largest bounding box extent in the machined plane. Source: strategy rules sheet (Gaurav).",
+    "bands": [
+      { "width_max_exclusive": 10,  "tool_type": "end_mill", "diameter_mm": 5,  "flutes": 3, "note": "Narrow face — end mill preferred, face mill too wide" },
+      { "width_max_exclusive": 150, "tool_type": "end_mill", "diameter_mm": 10, "flutes": 4, "note": "Medium face — 10mm end mill standard" },
+      { "width_max_exclusive": 300, "tool_type": "face_mill", "diameter_mm": 25, "flutes": 4, "note": "Large face — switch to face mill cutter" },
+      { "width_max_exclusive": null, "tool_type": "face_mill", "diameter_mm": 50, "flutes": 6, "note": "Very large face — 50mm face mill, may require multiple passes" }
+    ],
+    "boss_surface_overrides": [
+      { "width_max_exclusive": 20,  "tool_type": "end_mill", "diameter_mm": 10, "flutes": 4 },
+      { "width_max_exclusive": 100, "tool_type": "end_mill", "diameter_mm": 15, "flutes": 4 },
+      { "width_max_exclusive": null, "tool_type": "face_mill", "diameter_mm": 25, "flutes": 4 }
+    ]
+  },
+  "face_mill_stock_to_leave_z_mm": {
+    "description": "Z-axis stock to leave after face_mill RF pass (before FINISH). Different from general MATERIAL_STOCK_TABLE — facing is axial so XY stock is irrelevant. Source: strategy rules sheet (Gaurav, R-001 Notes).",
+    "aluminium_6061": 0.2,
+    "aluminium_6063": 0.2,
+    "aluminium_6082": 0.2,
+    "aluminium_7075": 0.2,
+    "aluminium": 0.2,
+    "mild_steel": 0.15,
+    "steel": 0.15,
+    "stainless_steel": 0.2,
+    "titanium": 0.15,
+    "default": 0.2
+  },
+  "rf_split_operations": [
+    "contour_mill",
+    "pocket_mill",
+    "counterbore_mill"
+  ],
+  "drill_like_operations_no_rf_split": [
+    "spot_drill",
+    "micro_drill",
+    "twist_drill",
+    "pilot_drill",
+    "core_drill",
+    "boring_bar",
+    "circular_interp",
+    "tap",
+    "tap_rh",
+    "reamer",
+    "chamfer_mill"
+  ],
+  "corner_r_feature_types": [
+    "slot",
+    "pocket",
+    "slot_angled",
+    "pocket_angled"
+  ],
+  "tap_drill_table_mm": {
+    "comment": "Key = nominal metric thread diameter; value = ISO 68-1 tap drill diameter. Non-table: nearest within 0.5mm else thread_dia * 0.8",
+    "2.0": 1.6,
+    "2.5": 2.05,
+    "3.0": 2.5,
+    "4.0": 3.3,
+    "5.0": 4.2,
+    "6.0": 5.0,
+    "8.0": 6.75,
+    "10.0": 8.5,
+    "12.0": 10.25
+  },
+  "warnings": [
+    "Slot/pocket process branches may still fall through to manual_review in select_process() until those feature types are fully wired.",
+    "LIVE (applied at import): all drill bands, DDR thresholds, boss_turning_min_diameter, stock_to_leave tables, face_mill_max_ap, rf_split_operations, drill_like_operations, tap_drill_table, corner_r_feature_types."
+  ]
+}

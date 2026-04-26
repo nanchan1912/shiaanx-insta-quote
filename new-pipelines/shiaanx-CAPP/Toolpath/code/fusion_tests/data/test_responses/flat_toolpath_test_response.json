@@ -1,0 +1,1731 @@
+{
+  "setops": [
+    {
+      "operations": [
+        {
+          "displayName": "1 Face",
+          "strategy": "face",
+          "ftool_id": [
+            "e6172a2f-3179-415f-a287-36f5add7a923",
+            0
+          ],
+          "toolPreset": {
+            "name": "AluWrought_Face_Rough",
+            "subtypekey": "PresetByName"
+          },
+          "selection": {
+            "subtypekey": "NoSelection"
+          },
+          "parameters": {
+            "tolerance": 0.00762,
+            "doFinishingStep": true,
+            "retractHeight_offset": 0.0,
+            "retractHeight_mode": "from feed height",
+            "feedHeight_offset": 0.5,
+            "feedHeight_mode": "from stock top",
+            "topHeight_offset": 0.0,
+            "topHeight_mode": "from stock top",
+            "bottomHeight_offset": 0.0,
+            "bottomHeight_mode": "from surface top",
+            "useStockToLeave": false,
+            "maximumStepdown": {
+              "expression": "tool_stepdown",
+              "subtypekey": "Expression"
+            },
+            "doMultipleDepths": true,
+            "stepover": {
+              "expression": "tool_stepover",
+              "subtypekey": "Expression"
+            }
+          },
+          "selection_param_name": "stockContours",
+          "selection_param_value_type": "CadContours2dParameterValue",
+          "notes": "ActionPlanMultiPass(rough_finish_facing, FacingFeature(FTR_FACING, id=nothing), tool.number=90)\n================================================================================\nParameters set by Toolpath:\n  bottomHeight_mode: from surface top\n  bottomHeight_offset: 0.0\n  doFinishingStep: true\n  doMultipleDepths: true\n  feedHeight_mode: from stock top\n  feedHeight_offset: 0.5\n  maximumStepdown: tool_stepdown\n  retractHeight_mode: from feed height\n  retractHeight_offset: 0.0\n  stepover: tool_stepover\n  tolerance: 0.00762\n  topHeight_mode: from stock top\n  topHeight_offset: 0.0\n  useStockToLeave: false\n",
+          "feature_string": "FacingFeature(FTR_FACING, id=nothing)",
+          "prototrak": {
+            "selection": {
+              "subtypekey": "NoSelection"
+            },
+            "z_bottom": -0.5399999999999999,
+            "z_top": 0.0,
+            "z_stock_top": 0.0,
+            "z_stock_bottom": -3.175,
+            "z_model_top": -0.5399999999999999,
+            "z_model_bottom": -2.54,
+            "subtypekey": "PrototrakOp"
+          },
+          "subtypekey": "FusionOp"
+        },
+        {
+          "displayName": "2 Adaptive Clearing",
+          "strategy": "adaptive",
+          "ftool_id": [
+            "6c8f81c7-e99f-48e1-90ee-aacdcfa9e560",
+            0
+          ],
+          "toolPreset": {
+            "name": "AluWrought_Adaptive_Rough",
+            "subtypekey": "PresetByName"
+          },
+          "selection": {
+            "subtypekey": "NoSelection"
+          },
+          "parameters": {
+            "useRestMachining": true,
+            "ignoreStockLessThan": 0.012700000000000001,
+            "restMaterialShadow": true,
+            "tolerance": 0.00127,
+            "minimumCuttingRadius": 0.0635,
+            "maximumStepdown": {
+              "expression": "tool_stepdown",
+              "subtypekey": "Expression"
+            },
+            "minimumStepdown": 0.00254,
+            "fineStepdown": 2.76606,
+            "smoothingFilter": true,
+            "smoothingFilterTolerance": 0.00381,
+            "topHeight_offset": 0.0,
+            "topHeight_mode": "from stock top",
+            "bottomHeight_offset": -0.025400000000000002,
+            "bottomHeight_mode": "from surface bottom",
+            "useStockToLeave": true,
+            "stockToLeave": 0.012700000000000001,
+            "minimumRampDiameter": 0.3175,
+            "boundaryMode": "none",
+            "optimalLoad": {
+              "expression": "tool_stepover",
+              "subtypekey": "Expression"
+            }
+          },
+          "selection_param_name": "machiningBoundarySel",
+          "selection_param_value_type": "CadContours2dParameterValue",
+          "notes": "ActionPlanMW(whole_part_roughing, nothing, tool.number=31)\n================================================================================\nParameters set by Toolpath:\n  bottomHeight_mode: from surface bottom\n  bottomHeight_offset: -0.025400000000000002\n  boundaryMode: none\n  fineStepdown: 2.76606\n  ignoreStockLessThan: 0.012700000000000001\n  maximumStepdown: tool_stepdown\n  minimumCuttingRadius: 0.0635\n  minimumRampDiameter: 0.3175\n  minimumStepdown: 0.00254\n  optimalLoad: tool_stepover\n  restMaterialShadow: true\n  smoothingFilter: true\n  smoothingFilterTolerance: 0.00381\n  stockToLeave: 0.012700000000000001\n  tolerance: 0.00127\n  topHeight_mode: from stock top\n  topHeight_offset: 0.0\n  useRestMachining: true\n  useStockToLeave: true\n",
+          "feature_string": "nothing",
+          "prototrak": {
+            "selection": {
+              "subtypekey": "NoSelection"
+            },
+            "z_bottom": -2.5654,
+            "z_top": 0.0,
+            "z_stock_top": 0.0,
+            "z_stock_bottom": -3.175,
+            "z_model_top": -0.5399999999999999,
+            "z_model_bottom": -2.54,
+            "subtypekey": "PrototrakOp"
+          },
+          "subtypekey": "FusionOp"
+        },
+        {
+          "displayName": "3 2D Contour",
+          "strategy": "contour2d",
+          "ftool_id": [
+            "6c8f81c7-e99f-48e1-90ee-aacdcfa9e560",
+            0
+          ],
+          "toolPreset": {
+            "name": "AluWrought_Wall_Finish",
+            "subtypekey": "PresetByName"
+          },
+          "selection": {
+            "subtypekey": "Silhouette"
+          },
+          "parameters": {
+            "topHeight_offset": 0.0,
+            "topHeight_mode": "from surface top",
+            "bottomHeight_offset": -0.012700000000000001,
+            "bottomHeight_mode": "from surface bottom",
+            "useStockToLeave": false,
+            "minimumRampDiameter": 0.3175,
+            "maximumStepdown": {
+              "expression": "tool_stepdown",
+              "subtypekey": "Expression"
+            },
+            "doMultipleDepths": false,
+            "finishingStepover": {
+              "expression": "tool_stepover",
+              "subtypekey": "Expression"
+            }
+          },
+          "selection_param_name": "contours",
+          "selection_param_value_type": "CadContours2dParameterValue",
+          "notes": "ActionPlanMW(finish_profile, ProfileFeature(FTR_PROFILE, min_cd=Inf, id=4), tool.number=31)\n================================================================================\nParameters set by Toolpath:\n  bottomHeight_mode: from surface bottom\n  bottomHeight_offset: -0.012700000000000001\n  doMultipleDepths: false\n  finishingStepover: tool_stepover\n  maximumStepdown: tool_stepdown\n  minimumRampDiameter: 0.3175\n  topHeight_mode: from surface top\n  topHeight_offset: 0.0\n  useStockToLeave: false\n",
+          "feature_string": "ProfileFeature(FTR_PROFILE, min_cd=Inf, id=4)",
+          "prototrak": {
+            "selection": {
+              "sketch_ids": [
+                "0x9d84b7f01f5ce235"
+              ],
+              "isOpen": [
+                false
+              ],
+              "isReverted": [
+                true
+              ],
+              "selection_param_name": "ignore",
+              "selection_param_value_type": "CadContours2dParameterValue",
+              "op_parameters": {},
+              "subtypekey": "SketchSelection_curves"
+            },
+            "z_bottom": -2.5526999999999997,
+            "z_top": -0.5399999999999999,
+            "z_stock_top": 0.0,
+            "z_stock_bottom": -3.175,
+            "z_model_top": -0.5399999999999999,
+            "z_model_bottom": -2.54,
+            "subtypekey": "PrototrakOp"
+          },
+          "subtypekey": "FusionOp"
+        },
+        {
+          "displayName": "4 Flat",
+          "strategy": "flat",
+          "ftool_id": [
+            "6c8f81c7-e99f-48e1-90ee-aacdcfa9e560",
+            0
+          ],
+          "toolPreset": {
+            "name": "AluWrought_Floor_Finish",
+            "subtypekey": "PresetByName"
+          },
+          "selection": {
+            "sketch_ids": [
+              "0x0bf6de66a336cf27"
+            ],
+            "selection_param_name": "checkSurfaceSelectionSets",
+            "selection_param_value_type": "CadMachineAvoidGroupsParameterValue",
+            "fallback": {
+              "sketch_ids": [
+                "0x0bf6de66a336cf27"
+              ],
+              "isOpen": [
+                false
+              ],
+              "isReverted": [
+                true
+              ],
+              "selection_param_name": "machiningBoundarySel",
+              "selection_param_value_type": "CadContours2dParameterValue",
+              "op_parameters": {
+                "boundaryMode": "selection",
+                "boundaryContainment": "outside"
+              },
+              "subtypekey": "SketchSelection_curves"
+            },
+            "subtypekey": "PatchFeatureTouchSelection"
+          },
+          "parameters": {
+            "boundaryMode": "none",
+            "tolerance": 0.00254,
+            "topHeight_offset": 0.0025400000000000023,
+            "topHeight_mode": "from point",
+            "topHeight_ref": {
+              "sketchPoints": [
+                {
+                  "point": [
+                    2.529450000000001,
+                    0.0,
+                    1.0
+                  ],
+                  "subtypekey": "SketchPoint"
+                }
+              ],
+              "Sketch_members": {
+                "isLightBulbOn": false,
+                "name": "0x07c27a2c00d73f95"
+              },
+              "sketch_id": "0x07c27a2c00d73f95",
+              "subtypekey": "Sketch_points"
+            },
+            "bottomHeight_offset": 0.0,
+            "bottomHeight_mode": "from point",
+            "bottomHeight_ref": {
+              "sketchPoints": [
+                {
+                  "point": [
+                    2.529450000000001,
+                    0.0,
+                    1.0
+                  ],
+                  "subtypekey": "SketchPoint"
+                }
+              ],
+              "Sketch_members": {
+                "isLightBulbOn": false,
+                "name": "0x07c27a2c00d73f95"
+              },
+              "sketch_id": "0x07c27a2c00d73f95",
+              "subtypekey": "Sketch_points"
+            },
+            "useStockToLeave": true,
+            "stockToLeave": 0.012700000000000001,
+            "verticalStockToLeave": 0.0,
+            "maximumStepdown": {
+              "expression": "tool_stepdown",
+              "subtypekey": "Expression"
+            },
+            "doMultipleDepths": false,
+            "stepover": {
+              "expression": "tool_stepover",
+              "subtypekey": "Expression"
+            },
+            "boundaryContainment": "inside"
+          },
+          "selection_param_name": "machiningBoundarySel",
+          "selection_param_value_type": "CadContours2dParameterValue",
+          "notes": "ActionPlanMW(finish_floor_flatlands, HoleFeature(FTR_BLIND_HOLE, 1.9917\u00f8, id=3), tool.number=31)\n================================================================================\nParameters set by Toolpath:\n  bottomHeight_mode: from point\n  bottomHeight_offset: 0.0\n  bottomHeight_ref: 0x07c27a2c00d73f95\n  boundaryContainment: inside\n  boundaryMode: none\n  doMultipleDepths: false\n  maximumStepdown: tool_stepdown\n  stepover: tool_stepover\n  stockToLeave: 0.012700000000000001\n  tolerance: 0.00254\n  topHeight_mode: from point\n  topHeight_offset: 0.0025400000000000023\n  topHeight_ref: 0x07c27a2c00d73f95\n  useStockToLeave: true\n  verticalStockToLeave: 0.0\n",
+          "feature_string": "HoleFeature(FTR_BLIND_HOLE, 1.9917\u00f8, id=3)",
+          "prototrak": {
+            "selection": {
+              "sketch_ids": [
+                "0x0bf6de66a336cf27"
+              ],
+              "isOpen": [
+                false
+              ],
+              "isReverted": [
+                true
+              ],
+              "selection_param_name": "ignore",
+              "selection_param_value_type": "CadContours2dParameterValue",
+              "op_parameters": {},
+              "subtypekey": "SketchSelection_curves"
+            },
+            "z_bottom": -1.54,
+            "z_top": -1.5374599999999998,
+            "z_stock_top": 0.0,
+            "z_stock_bottom": -3.175,
+            "z_model_top": -0.5399999999999999,
+            "z_model_bottom": -2.54,
+            "subtypekey": "PrototrakOp"
+          },
+          "subtypekey": "FusionOp"
+        },
+        {
+          "displayName": "5 2D Contour",
+          "strategy": "contour2d",
+          "ftool_id": [
+            "6c8f81c7-e99f-48e1-90ee-aacdcfa9e560",
+            0
+          ],
+          "toolPreset": {
+            "name": "AluWrought_Wall_Finish",
+            "subtypekey": "PresetByName"
+          },
+          "selection": {
+            "sketch_ids": [
+              "0x0bf6de66a336cf27"
+            ],
+            "isOpen": [
+              false
+            ],
+            "isReverted": [
+              true
+            ],
+            "selection_param_name": "contours",
+            "selection_param_value_type": "CadContours2dParameterValue",
+            "op_parameters": {},
+            "subtypekey": "SketchSelection_curves"
+          },
+          "parameters": {
+            "tolerance": 0.000254,
+            "topHeight_offset": 0.0,
+            "topHeight_mode": "from surface top",
+            "bottomHeight_offset": 0.000253999999999972,
+            "bottomHeight_mode": "from contour",
+            "useStockToLeave": false,
+            "minimumRampDiameter": 0.3175,
+            "maximumStepdown": {
+              "expression": "tool_stepdown",
+              "subtypekey": "Expression"
+            },
+            "doMultipleDepths": false,
+            "finishingStepover": {
+              "expression": "tool_stepover",
+              "subtypekey": "Expression"
+            }
+          },
+          "selection_param_name": "contours",
+          "selection_param_value_type": "CadContours2dParameterValue",
+          "notes": "ActionPlanMW(finish_wall_constant_z, HoleFeature(FTR_BLIND_HOLE, 1.9917\u00f8, id=3), tool.number=31)\n================================================================================\nParameters set by Toolpath:\n  bottomHeight_mode: from contour\n  bottomHeight_offset: 0.000253999999999972\n  doMultipleDepths: false\n  finishingStepover: tool_stepover\n  maximumStepdown: tool_stepdown\n  minimumRampDiameter: 0.3175\n  tolerance: 0.000254\n  topHeight_mode: from surface top\n  topHeight_offset: 0.0\n  useStockToLeave: false\n",
+          "feature_string": "HoleFeature(FTR_BLIND_HOLE, 1.9917\u00f8, id=3)",
+          "prototrak": {
+            "selection": {
+              "sketch_ids": [
+                "0x0bf6de66a336cf27"
+              ],
+              "isOpen": [
+                false
+              ],
+              "isReverted": [
+                true
+              ],
+              "selection_param_name": "ignore",
+              "selection_param_value_type": "CadContours2dParameterValue",
+              "op_parameters": {},
+              "subtypekey": "SketchSelection_curves"
+            },
+            "z_bottom": -1.539746,
+            "z_top": -0.5399999999999999,
+            "z_stock_top": 0.0,
+            "z_stock_bottom": -3.175,
+            "z_model_top": -0.5399999999999999,
+            "z_model_bottom": -2.54,
+            "subtypekey": "PrototrakOp"
+          },
+          "subtypekey": "FusionOp"
+        },
+        {
+          "displayName": "6 Flat",
+          "strategy": "flat",
+          "ftool_id": [
+            "6c8f81c7-e99f-48e1-90ee-aacdcfa9e560",
+            0
+          ],
+          "toolPreset": {
+            "name": "AluWrought_Floor_Finish",
+            "subtypekey": "PresetByName"
+          },
+          "selection": {
+            "sketch_ids": [
+              "0xfdaa83a328227328"
+            ],
+            "selection_param_name": "checkSurfaceSelectionSets",
+            "selection_param_value_type": "CadMachineAvoidGroupsParameterValue",
+            "fallback": {
+              "sketch_ids": [
+                "0xfdaa83a328227328"
+              ],
+              "isOpen": [
+                false
+              ],
+              "isReverted": [
+                true
+              ],
+              "selection_param_name": "machiningBoundarySel",
+              "selection_param_value_type": "CadContours2dParameterValue",
+              "op_parameters": {
+                "boundaryMode": "selection",
+                "boundaryContainment": "outside"
+              },
+              "subtypekey": "SketchSelection_curves"
+            },
+            "subtypekey": "PatchFeatureTouchSelection"
+          },
+          "parameters": {
+            "boundaryMode": "none",
+            "tolerance": 0.00254,
+            "topHeight_offset": 0.0025400000000000023,
+            "topHeight_mode": "from point",
+            "topHeight_ref": {
+              "sketchPoints": [
+                {
+                  "point": [
+                    1.4365000000000003,
+                    0.0,
+                    0.4
+                  ],
+                  "subtypekey": "SketchPoint"
+                }
+              ],
+              "Sketch_members": {
+                "isLightBulbOn": false,
+                "name": "0x1034f66c90aeeb5d"
+              },
+              "sketch_id": "0x1034f66c90aeeb5d",
+              "subtypekey": "Sketch_points"
+            },
+            "bottomHeight_offset": 0.0,
+            "bottomHeight_mode": "from point",
+            "bottomHeight_ref": {
+              "sketchPoints": [
+                {
+                  "point": [
+                    1.4365000000000003,
+                    0.0,
+                    0.4
+                  ],
+                  "subtypekey": "SketchPoint"
+                }
+              ],
+              "Sketch_members": {
+                "isLightBulbOn": false,
+                "name": "0x1034f66c90aeeb5d"
+              },
+              "sketch_id": "0x1034f66c90aeeb5d",
+              "subtypekey": "Sketch_points"
+            },
+            "useStockToLeave": true,
+            "stockToLeave": 0.012700000000000001,
+            "verticalStockToLeave": 0.0,
+            "maximumStepdown": {
+              "expression": "tool_stepdown",
+              "subtypekey": "Expression"
+            },
+            "doMultipleDepths": false,
+            "stepover": {
+              "expression": "tool_stepover",
+              "subtypekey": "Expression"
+            },
+            "boundaryContainment": "inside"
+          },
+          "selection_param_name": "machiningBoundarySel",
+          "selection_param_value_type": "CadContours2dParameterValue",
+          "notes": "ActionPlanMW(finish_floor_flatlands, HoleFeature(FTR_BLIND_HOLE, 1.1311\u00f8, id=2), tool.number=31)\n================================================================================\nParameters set by Toolpath:\n  bottomHeight_mode: from point\n  bottomHeight_offset: 0.0\n  bottomHeight_ref: 0x1034f66c90aeeb5d\n  boundaryContainment: inside\n  boundaryMode: none\n  doMultipleDepths: false\n  maximumStepdown: tool_stepdown\n  stepover: tool_stepover\n  stockToLeave: 0.012700000000000001\n  tolerance: 0.00254\n  topHeight_mode: from point\n  topHeight_offset: 0.0025400000000000023\n  topHeight_ref: 0x1034f66c90aeeb5d\n  useStockToLeave: true\n  verticalStockToLeave: 0.0\n",
+          "feature_string": "HoleFeature(FTR_BLIND_HOLE, 1.1311\u00f8, id=2)",
+          "prototrak": {
+            "selection": {
+              "sketch_ids": [
+                "0xfdaa83a328227328"
+              ],
+              "isOpen": [
+                false
+              ],
+              "isReverted": [
+                true
+              ],
+              "selection_param_name": "ignore",
+              "selection_param_value_type": "CadContours2dParameterValue",
+              "op_parameters": {},
+              "subtypekey": "SketchSelection_curves"
+            },
+            "z_bottom": -2.14,
+            "z_top": -2.13746,
+            "z_stock_top": 0.0,
+            "z_stock_bottom": -3.175,
+            "z_model_top": -0.5399999999999999,
+            "z_model_bottom": -2.54,
+            "subtypekey": "PrototrakOp"
+          },
+          "subtypekey": "FusionOp"
+        },
+        {
+          "displayName": "7 2D Contour",
+          "strategy": "contour2d",
+          "ftool_id": [
+            "6c8f81c7-e99f-48e1-90ee-aacdcfa9e560",
+            0
+          ],
+          "toolPreset": {
+            "name": "AluWrought_Wall_Finish",
+            "subtypekey": "PresetByName"
+          },
+          "selection": {
+            "sketch_ids": [
+              "0xfdaa83a328227328"
+            ],
+            "isOpen": [
+              false
+            ],
+            "isReverted": [
+              true
+            ],
+            "selection_param_name": "contours",
+            "selection_param_value_type": "CadContours2dParameterValue",
+            "op_parameters": {},
+            "subtypekey": "SketchSelection_curves"
+          },
+          "parameters": {
+            "tolerance": 0.000254,
+            "topHeight_offset": 0.6000000000000001,
+            "topHeight_mode": "from contour",
+            "bottomHeight_offset": 0.000253999999999972,
+            "bottomHeight_mode": "from contour",
+            "useStockToLeave": false,
+            "minimumRampDiameter": 0.3175,
+            "maximumStepdown": {
+              "expression": "tool_stepdown",
+              "subtypekey": "Expression"
+            },
+            "doMultipleDepths": false,
+            "finishingStepover": {
+              "expression": "tool_stepover",
+              "subtypekey": "Expression"
+            }
+          },
+          "selection_param_name": "contours",
+          "selection_param_value_type": "CadContours2dParameterValue",
+          "notes": "ActionPlanMW(finish_wall_constant_z, HoleFeature(FTR_BLIND_HOLE, 1.1311\u00f8, id=2), tool.number=31)\n================================================================================\nParameters set by Toolpath:\n  bottomHeight_mode: from contour\n  bottomHeight_offset: 0.000253999999999972\n  doMultipleDepths: false\n  finishingStepover: tool_stepover\n  maximumStepdown: tool_stepdown\n  minimumRampDiameter: 0.3175\n  tolerance: 0.000254\n  topHeight_mode: from contour\n  topHeight_offset: 0.6000000000000001\n  useStockToLeave: false\n",
+          "feature_string": "HoleFeature(FTR_BLIND_HOLE, 1.1311\u00f8, id=2)",
+          "prototrak": {
+            "selection": {
+              "sketch_ids": [
+                "0xfdaa83a328227328"
+              ],
+              "isOpen": [
+                false
+              ],
+              "isReverted": [
+                true
+              ],
+              "selection_param_name": "ignore",
+              "selection_param_value_type": "CadContours2dParameterValue",
+              "op_parameters": {},
+              "subtypekey": "SketchSelection_curves"
+            },
+            "z_bottom": -2.139746,
+            "z_top": -1.54,
+            "z_stock_top": 0.0,
+            "z_stock_bottom": -3.175,
+            "z_model_top": -0.5399999999999999,
+            "z_model_bottom": -2.54,
+            "subtypekey": "PrototrakOp"
+          },
+          "subtypekey": "FusionOp"
+        }
+      ],
+      "coorddef": {
+        "workCoordinateSystem_mm": {
+          "origin": [
+            -5.639932965095795e-15,
+            0.0,
+            25.4
+          ],
+          "xaxis": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "yaxis": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "zaxis": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        "subtypekey": "AbsoluteCoordDef"
+      },
+      "stepCoordinateSystem_cm": {
+        "origin": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "xaxis": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "yaxis": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "zaxis": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "job_stock": {
+        "center": [
+          0.0,
+          0.0,
+          0.9525
+        ],
+        "xdirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "ydirection": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "size": [
+          6.35,
+          6.35,
+          3.175
+        ],
+        "shape": {
+          "name": "box",
+          "size": [
+            6.35,
+            6.35,
+            3.175
+          ],
+          "stock_top_offset": 0.5399999999999999,
+          "subtypekey": "StockShapeBox"
+        },
+        "name": "Optimized Stock",
+        "parameters": {
+          "job_stockMode": "solid"
+        },
+        "subtypekey": "JobStockCreateModel"
+      },
+      "notes": null,
+      "name": "AutoSetup 1",
+      "setup_parameters": {},
+      "subtypekey": "SetopAuto",
+      "sketch_book": {
+        "sketch_by_id": {
+          "0x9d84b7f01f5ce235": {
+            "sketchSegments": [
+              {
+                "centerPoint": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "startPoint": [
+                  -3.0,
+                  5.639932965095795e-16,
+                  0.0
+                ],
+                "endPoint": [
+                  -5.639932965095795e-16,
+                  -3.0,
+                  0.0
+                ],
+                "normal": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "subtypekey": "SketchArcByCenterStartEnd"
+              },
+              {
+                "centerPoint": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "startPoint": [
+                  -5.639932965095795e-16,
+                  -3.0,
+                  0.0
+                ],
+                "endPoint": [
+                  3.0,
+                  0.0,
+                  0.0
+                ],
+                "normal": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "subtypekey": "SketchArcByCenterStartEnd"
+              },
+              {
+                "centerPoint": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "startPoint": [
+                  3.0,
+                  0.0,
+                  0.0
+                ],
+                "endPoint": [
+                  0.0,
+                  2.999999999999999,
+                  0.0
+                ],
+                "normal": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "subtypekey": "SketchArcByCenterStartEnd"
+              },
+              {
+                "centerPoint": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "startPoint": [
+                  0.0,
+                  2.999999999999999,
+                  0.0
+                ],
+                "endPoint": [
+                  -3.0,
+                  5.639932965095795e-16,
+                  0.0
+                ],
+                "normal": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "subtypekey": "SketchArcByCenterStartEnd"
+              }
+            ],
+            "Sketch_members": {
+              "isLightBulbOn": false,
+              "name": "0x9d84b7f01f5ce235"
+            },
+            "sketch_id": "0x9d84b7f01f5ce235",
+            "subtypekey": "Sketch_curves"
+          },
+          "0x0bf6de66a336cf27": {
+            "sketchSegments": [
+              {
+                "centerPoint": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "startPoint": [
+                  2.529450000000001,
+                  0.0,
+                  1.0
+                ],
+                "endPoint": [
+                  -5.639932965095795e-16,
+                  -2.52945,
+                  1.0
+                ],
+                "normal": [
+                  -0.0,
+                  -0.0,
+                  -1.0
+                ],
+                "subtypekey": "SketchArcByCenterStartEnd"
+              },
+              {
+                "centerPoint": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "startPoint": [
+                  -5.639932965095795e-16,
+                  -2.52945,
+                  1.0
+                ],
+                "endPoint": [
+                  -2.52945,
+                  5.639932965095795e-16,
+                  1.0
+                ],
+                "normal": [
+                  -0.0,
+                  -0.0,
+                  -1.0
+                ],
+                "subtypekey": "SketchArcByCenterStartEnd"
+              },
+              {
+                "centerPoint": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "startPoint": [
+                  -2.52945,
+                  5.639932965095795e-16,
+                  1.0
+                ],
+                "endPoint": [
+                  0.0,
+                  2.52945,
+                  1.0
+                ],
+                "normal": [
+                  -0.0,
+                  -0.0,
+                  -1.0
+                ],
+                "subtypekey": "SketchArcByCenterStartEnd"
+              },
+              {
+                "centerPoint": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "startPoint": [
+                  0.0,
+                  2.52945,
+                  1.0
+                ],
+                "endPoint": [
+                  2.529450000000001,
+                  0.0,
+                  1.0
+                ],
+                "normal": [
+                  -0.0,
+                  -0.0,
+                  -1.0
+                ],
+                "subtypekey": "SketchArcByCenterStartEnd"
+              }
+            ],
+            "Sketch_members": {
+              "isLightBulbOn": false,
+              "name": "0x0bf6de66a336cf27"
+            },
+            "sketch_id": "0x0bf6de66a336cf27",
+            "subtypekey": "Sketch_curves"
+          },
+          "0x03a9bd8d588d01b5": {
+            "sketchPoints": [
+              {
+                "point": [
+                  2.529450000000001,
+                  0.0,
+                  2.0
+                ],
+                "subtypekey": "SketchPoint"
+              }
+            ],
+            "Sketch_members": {
+              "isLightBulbOn": false,
+              "name": "0x03a9bd8d588d01b5"
+            },
+            "sketch_id": "0x03a9bd8d588d01b5",
+            "subtypekey": "Sketch_points"
+          },
+          "0x07c27a2c00d73f95": {
+            "sketchPoints": [
+              {
+                "point": [
+                  2.529450000000001,
+                  0.0,
+                  1.0
+                ],
+                "subtypekey": "SketchPoint"
+              }
+            ],
+            "Sketch_members": {
+              "isLightBulbOn": false,
+              "name": "0x07c27a2c00d73f95"
+            },
+            "sketch_id": "0x07c27a2c00d73f95",
+            "subtypekey": "Sketch_points"
+          },
+          "0xfdaa83a328227328": {
+            "sketchSegments": [
+              {
+                "centerPoint": [
+                  0.0,
+                  0.0,
+                  0.4
+                ],
+                "startPoint": [
+                  1.4365000000000003,
+                  0.0,
+                  0.4
+                ],
+                "endPoint": [
+                  0.0,
+                  -1.4365,
+                  0.4
+                ],
+                "normal": [
+                  -0.0,
+                  -0.0,
+                  -1.0
+                ],
+                "subtypekey": "SketchArcByCenterStartEnd"
+              },
+              {
+                "centerPoint": [
+                  0.0,
+                  0.0,
+                  0.4
+                ],
+                "startPoint": [
+                  0.0,
+                  -1.4365,
+                  0.4
+                ],
+                "endPoint": [
+                  -1.4365,
+                  0.0,
+                  0.4
+                ],
+                "normal": [
+                  -0.0,
+                  -0.0,
+                  -1.0
+                ],
+                "subtypekey": "SketchArcByCenterStartEnd"
+              },
+              {
+                "centerPoint": [
+                  0.0,
+                  0.0,
+                  0.4
+                ],
+                "startPoint": [
+                  -1.4365,
+                  0.0,
+                  0.4
+                ],
+                "endPoint": [
+                  0.0,
+                  1.4364999999999999,
+                  0.4
+                ],
+                "normal": [
+                  -0.0,
+                  -0.0,
+                  -1.0
+                ],
+                "subtypekey": "SketchArcByCenterStartEnd"
+              },
+              {
+                "centerPoint": [
+                  0.0,
+                  0.0,
+                  0.4
+                ],
+                "startPoint": [
+                  0.0,
+                  1.4364999999999999,
+                  0.4
+                ],
+                "endPoint": [
+                  1.4365000000000003,
+                  0.0,
+                  0.4
+                ],
+                "normal": [
+                  -0.0,
+                  -0.0,
+                  -1.0
+                ],
+                "subtypekey": "SketchArcByCenterStartEnd"
+              }
+            ],
+            "Sketch_members": {
+              "isLightBulbOn": false,
+              "name": "0xfdaa83a328227328"
+            },
+            "sketch_id": "0xfdaa83a328227328",
+            "subtypekey": "Sketch_curves"
+          },
+          "0x8bb2d7c9f3215945": {
+            "sketchPoints": [
+              {
+                "point": [
+                  1.4365000000000003,
+                  0.0,
+                  1.0
+                ],
+                "subtypekey": "SketchPoint"
+              }
+            ],
+            "Sketch_members": {
+              "isLightBulbOn": false,
+              "name": "0x8bb2d7c9f3215945"
+            },
+            "sketch_id": "0x8bb2d7c9f3215945",
+            "subtypekey": "Sketch_points"
+          },
+          "0x1034f66c90aeeb5d": {
+            "sketchPoints": [
+              {
+                "point": [
+                  1.4365000000000003,
+                  0.0,
+                  0.4
+                ],
+                "subtypekey": "SketchPoint"
+              }
+            ],
+            "Sketch_members": {
+              "isLightBulbOn": false,
+              "name": "0x1034f66c90aeeb5d"
+            },
+            "sketch_id": "0x1034f66c90aeeb5d",
+            "subtypekey": "Sketch_points"
+          }
+        },
+        "subtypekey": "SketchBook"
+      },
+      "operationId": null
+    },
+    {
+      "operations": [
+        {
+          "displayName": "1 Face",
+          "strategy": "face",
+          "ftool_id": [
+            "e6172a2f-3179-415f-a287-36f5add7a923",
+            0
+          ],
+          "toolPreset": {
+            "name": "AluWrought_Face_Rough",
+            "subtypekey": "PresetByName"
+          },
+          "selection": {
+            "subtypekey": "NoSelection"
+          },
+          "parameters": {
+            "tolerance": 0.00762,
+            "doFinishingStep": true,
+            "retractHeight_offset": 0.0,
+            "retractHeight_mode": "from feed height",
+            "feedHeight_offset": 0.5,
+            "feedHeight_mode": "from stock top",
+            "topHeight_offset": 0.0,
+            "topHeight_mode": "from stock top",
+            "bottomHeight_offset": 0.0,
+            "bottomHeight_mode": "from surface top",
+            "useStockToLeave": false,
+            "maximumStepdown": {
+              "expression": "tool_stepdown",
+              "subtypekey": "Expression"
+            },
+            "doMultipleDepths": true,
+            "stepover": {
+              "expression": "tool_stepover",
+              "subtypekey": "Expression"
+            }
+          },
+          "selection_param_name": "stockContours",
+          "selection_param_value_type": "CadContours2dParameterValue",
+          "notes": "ActionPlanMultiPass(rough_finish_facing, FacingFeature(FTR_FACING, id=nothing), tool.number=90)\n================================================================================\nParameters set by Toolpath:\n  bottomHeight_mode: from surface top\n  bottomHeight_offset: 0.0\n  doFinishingStep: true\n  doMultipleDepths: true\n  feedHeight_mode: from stock top\n  feedHeight_offset: 0.5\n  maximumStepdown: tool_stepdown\n  retractHeight_mode: from feed height\n  retractHeight_offset: 0.0\n  stepover: tool_stepover\n  tolerance: 0.00762\n  topHeight_mode: from stock top\n  topHeight_offset: 0.0\n  useStockToLeave: false\n",
+          "feature_string": "FacingFeature(FTR_FACING, id=nothing)",
+          "prototrak": {
+            "selection": {
+              "subtypekey": "NoSelection"
+            },
+            "z_bottom": -0.6349999999999997,
+            "z_top": 0.0,
+            "z_stock_top": 0.0,
+            "z_stock_bottom": -3.175,
+            "z_model_top": -0.6349999999999997,
+            "z_model_bottom": -2.635,
+            "subtypekey": "PrototrakOp"
+          },
+          "subtypekey": "FusionOp"
+        }
+      ],
+      "coorddef": {
+        "workCoordinateSystem_mm": {
+          "origin": [
+            0.0,
+            0.0,
+            -6.349999999999997
+          ],
+          "xaxis": [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          "yaxis": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "zaxis": [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        },
+        "subtypekey": "AbsoluteCoordDef"
+      },
+      "stepCoordinateSystem_cm": {
+        "origin": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "xaxis": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "yaxis": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "zaxis": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "job_stock": {
+        "parameters": {
+          "job_continueMachining": true,
+          "job_stockMode": "previoussetup"
+        },
+        "subtypekey": "JobStockFromSetupParameters"
+      },
+      "notes": null,
+      "name": "AutoSetup 2",
+      "setup_parameters": {},
+      "subtypekey": "SetopAuto",
+      "sketch_book": {
+        "sketch_by_id": {},
+        "subtypekey": "SketchBook"
+      },
+      "operationId": null
+    }
+  ],
+  "fusion_tool_library": {
+    "data": [
+      {
+        "BMC": "hss",
+        "description": "2\" 5F Face ",
+        "geometry": {
+          "CSP": false,
+          "DC": 2.0,
+          "LB": 1.563,
+          "LCF": 0.633,
+          "NOF": 5.0,
+          "OAL": 1.563,
+          "SFDM": 1.8,
+          "shoulder-length": 0.633,
+          "HAND": true,
+          "TA": 0.0,
+          "RE": 0.0,
+          "tip-length": null,
+          "assemblyGaugeLength": 4.684637999999999
+        },
+        "guid": "e6172a2f-3179-415f-a287-36f5add7a923",
+        "post-process": {
+          "number": 0,
+          "diameter-offset": 0,
+          "length-offset": 0,
+          "turret": 0,
+          "comment": "",
+          "manual-tool-change": false,
+          "live": true,
+          "break-control": false
+        },
+        "type": "face mill",
+        "unit": "inches",
+        "start-values": {
+          "presets": [
+            {
+              "name": "AluWrought_Face_Rough",
+              "description": null,
+              "guid": "9014e055-9c96-4afe-a388-89b51180eb19",
+              "n": 1910.0,
+              "v_f": 38.2,
+              "v_c": 1000.073661392751,
+              "f_z": 0.004,
+              "f_n": 0.03141361256544502,
+              "n_ramp": 1910.0,
+              "v_f_leadIn": 38.2,
+              "v_f_leadOut": 38.2,
+              "v_f_transition": 38.2,
+              "v_f_ramp": 38.2,
+              "v_f_plunge": 60.0,
+              "use-stepdown": true,
+              "use-stepover": true,
+              "stepdown": 0.253,
+              "stepover": 1.7,
+              "use-feed-per-revolution": false,
+              "tool-coolant": "flood",
+              "material": {
+                "category": "all",
+                "query": ""
+              }
+            },
+            {
+              "name": "AluWrought_Face_Finish",
+              "description": null,
+              "guid": "bab0a59f-6fbc-4feb-953c-c87e3788cd0b",
+              "n": 1910.0,
+              "v_f": 38.2,
+              "v_c": 1000.073661392751,
+              "f_z": 0.004,
+              "f_n": 0.03141361256544502,
+              "n_ramp": 1910.0,
+              "v_f_leadIn": 38.2,
+              "v_f_leadOut": 38.2,
+              "v_f_transition": 38.2,
+              "v_f_ramp": 38.2,
+              "v_f_plunge": 60.0,
+              "use-stepdown": true,
+              "use-stepover": true,
+              "stepdown": 0.03,
+              "stepover": 1.7,
+              "use-feed-per-revolution": false,
+              "tool-coolant": "flood",
+              "material": {
+                "category": "all",
+                "query": ""
+              }
+            }
+          ]
+        },
+        "shaft": {
+          "segments": [
+            {
+              "height": 0.465,
+              "lower-diameter": 1.9685,
+              "upper-diameter": 1.8
+            }
+          ],
+          "type": "shaft"
+        },
+        "holder": {
+          "segments": [
+            {
+              "height": 0.241732,
+              "lower-diameter": 1.9,
+              "upper-diameter": 2.48
+            },
+            {
+              "height": 0.9,
+              "lower-diameter": 2.48,
+              "upper-diameter": 2.48
+            },
+            {
+              "height": 0.499213,
+              "lower-diameter": 1.9685,
+              "upper-diameter": 1.9685
+            },
+            {
+              "height": 0.106693,
+              "lower-diameter": 1.9685,
+              "upper-diameter": 1.75
+            },
+            {
+              "height": 0.575,
+              "lower-diameter": 1.75,
+              "upper-diameter": 1.75
+            },
+            {
+              "height": 0.05,
+              "lower-diameter": 1.75,
+              "upper-diameter": 1.85
+            },
+            {
+              "height": 0.03,
+              "lower-diameter": 2.442,
+              "upper-diameter": 2.502
+            },
+            {
+              "height": 0.145,
+              "lower-diameter": 2.502,
+              "upper-diameter": 2.502
+            },
+            {
+              "height": 0.079,
+              "lower-diameter": 2.502,
+              "upper-diameter": 2.215
+            },
+            {
+              "height": 0.118,
+              "lower-diameter": 2.215,
+              "upper-diameter": 2.215
+            },
+            {
+              "height": 0.079,
+              "lower-diameter": 2.215,
+              "upper-diameter": 2.502
+            },
+            {
+              "height": 0.143,
+              "lower-diameter": 2.502,
+              "upper-diameter": 2.502
+            },
+            {
+              "height": 0.03,
+              "lower-diameter": 2.502,
+              "upper-diameter": 2.442
+            },
+            {
+              "height": 0.125,
+              "lower-diameter": 1.75,
+              "upper-diameter": 1.75
+            }
+          ],
+          "type": "holder",
+          "gaugeLength": 3.121637999999999,
+          "guid": "44e5ca57-c1d2-415d-a827-ce30a236ce40",
+          "description": "Maritool CAT40-ER40-3.0",
+          "unit": "inches"
+        },
+        "vendor": "Toolpath",
+        "product-id": "",
+        "product-link": "https://toolpath.com/?source=fusion-tool-definition"
+      },
+      {
+        "BMC": "carbide",
+        "description": "1/2\" 3F Flat  ",
+        "geometry": {
+          "CSP": false,
+          "DC": 0.5,
+          "LB": 1.55,
+          "LCF": 1.1,
+          "NOF": 3.0,
+          "OAL": 2.55,
+          "SFDM": 0.5,
+          "shoulder-length": 1.1,
+          "HAND": true,
+          "tip-length": null,
+          "assemblyGaugeLength": 4.671637999999999
+        },
+        "guid": "6c8f81c7-e99f-48e1-90ee-aacdcfa9e560",
+        "post-process": {
+          "number": 0,
+          "diameter-offset": 0,
+          "length-offset": 0,
+          "turret": 0,
+          "comment": "",
+          "manual-tool-change": false,
+          "live": true,
+          "break-control": false
+        },
+        "type": "flat end mill",
+        "unit": "inches",
+        "start-values": {
+          "presets": [
+            {
+              "name": "AluWrought_Adaptive_Rough",
+              "description": null,
+              "guid": "989acefd-f10c-444e-a21d-593080d4666e",
+              "n": 7640.0,
+              "v_f": 148.0,
+              "v_c": 1000.073661392751,
+              "f_z": 0.006457242582897033,
+              "f_n": 0.007853403141361256,
+              "n_ramp": 7640.0,
+              "v_f_leadIn": 148.0,
+              "v_f_leadOut": 148.0,
+              "v_f_transition": 148.0,
+              "v_f_ramp": 148.0,
+              "v_f_plunge": 60.0,
+              "use-stepdown": true,
+              "use-stepover": true,
+              "stepdown": 1.1,
+              "stepover": 0.113,
+              "use-feed-per-revolution": false,
+              "tool-coolant": "flood",
+              "material": {
+                "category": "all",
+                "query": ""
+              }
+            },
+            {
+              "name": "AluWrought_Traditional_Rough",
+              "description": null,
+              "guid": "bb65fa67-1f55-44f6-8cdc-9bd237b5c704",
+              "n": 7640.0,
+              "v_f": 113.0,
+              "v_c": 1000.073661392751,
+              "f_z": 0.004930191972076788,
+              "f_n": 0.007853403141361256,
+              "n_ramp": 7640.0,
+              "v_f_leadIn": 113.0,
+              "v_f_leadOut": 113.0,
+              "v_f_transition": 113.0,
+              "v_f_ramp": 113.0,
+              "v_f_plunge": 60.0,
+              "use-stepdown": true,
+              "use-stepover": true,
+              "stepdown": 0.171,
+              "stepover": 0.5,
+              "use-feed-per-revolution": false,
+              "tool-coolant": "flood",
+              "material": {
+                "category": "all",
+                "query": ""
+              }
+            },
+            {
+              "name": "AluWrought_Bore_Rough",
+              "description": null,
+              "guid": "e56d8181-1be5-4bc3-b704-6c4696d5e588",
+              "n": 7640.0,
+              "v_f": 113.0,
+              "v_c": 1000.073661392751,
+              "f_z": 0.004930191972076788,
+              "f_n": 0.007853403141361256,
+              "n_ramp": 7640.0,
+              "v_f_leadIn": 113.0,
+              "v_f_leadOut": 113.0,
+              "v_f_transition": 113.0,
+              "v_f_ramp": 113.0,
+              "v_f_plunge": 60.0,
+              "use-stepdown": true,
+              "use-stepover": true,
+              "stepdown": 0.171,
+              "stepover": 0.5,
+              "use-feed-per-revolution": false,
+              "tool-coolant": "flood",
+              "material": {
+                "category": "all",
+                "query": ""
+              }
+            },
+            {
+              "name": "AluWrought_Bore_Finish",
+              "description": null,
+              "guid": "4cdc627b-7eb3-4c40-a46b-c8c2c1d51402",
+              "n": 7640.0,
+              "v_f": 113.0,
+              "v_c": 1000.073661392751,
+              "f_z": 0.004930191972076788,
+              "f_n": 0.007853403141361256,
+              "n_ramp": 7640.0,
+              "v_f_leadIn": 113.0,
+              "v_f_leadOut": 113.0,
+              "v_f_transition": 113.0,
+              "v_f_ramp": 113.0,
+              "v_f_plunge": 60.0,
+              "use-stepdown": true,
+              "use-stepover": true,
+              "stepdown": 0.171,
+              "stepover": 0.5,
+              "use-feed-per-revolution": false,
+              "tool-coolant": "flood",
+              "material": {
+                "category": "all",
+                "query": ""
+              }
+            },
+            {
+              "name": "AluWrought_Wall_Finish",
+              "description": null,
+              "guid": "d44bc19b-7f22-442d-af36-57a01be66a5a",
+              "n": 7640.0,
+              "v_f": 103.0,
+              "v_c": 1000.073661392751,
+              "f_z": 0.004493891797556719,
+              "f_n": 0.007853403141361256,
+              "n_ramp": 7640.0,
+              "v_f_leadIn": 103.0,
+              "v_f_leadOut": 103.0,
+              "v_f_transition": 103.0,
+              "v_f_ramp": 103.0,
+              "v_f_plunge": 60.0,
+              "use-stepdown": true,
+              "use-stepover": true,
+              "stepdown": 1.1,
+              "stepover": 0.025,
+              "use-feed-per-revolution": false,
+              "tool-coolant": "flood",
+              "material": {
+                "category": "all",
+                "query": ""
+              }
+            },
+            {
+              "name": "AluWrought_Floor_Finish",
+              "description": null,
+              "guid": "0082c93c-fa36-45e1-bf93-259d5190e6d8",
+              "n": 7640.0,
+              "v_f": 148.0,
+              "v_c": 1000.073661392751,
+              "f_z": 0.006457242582897033,
+              "f_n": 0.007853403141361256,
+              "n_ramp": 7640.0,
+              "v_f_leadIn": 148.0,
+              "v_f_leadOut": 148.0,
+              "v_f_transition": 148.0,
+              "v_f_ramp": 148.0,
+              "v_f_plunge": 60.0,
+              "use-stepdown": true,
+              "use-stepover": true,
+              "stepdown": 1.1,
+              "stepover": 0.45,
+              "use-feed-per-revolution": false,
+              "tool-coolant": "flood",
+              "material": {
+                "category": "all",
+                "query": ""
+              }
+            },
+            {
+              "name": "AluWrought_Slot",
+              "description": null,
+              "guid": "80118b2a-4d2f-4695-a639-4e2e0ea7d19e",
+              "n": 7640.0,
+              "v_f": 113.0,
+              "v_c": 1000.073661392751,
+              "f_z": 0.004930191972076788,
+              "f_n": 0.007853403141361256,
+              "n_ramp": 7640.0,
+              "v_f_leadIn": 113.0,
+              "v_f_leadOut": 113.0,
+              "v_f_transition": 113.0,
+              "v_f_ramp": 113.0,
+              "v_f_plunge": 60.0,
+              "use-stepdown": true,
+              "use-stepover": true,
+              "stepdown": 0.171,
+              "stepover": 0.5,
+              "use-feed-per-revolution": false,
+              "tool-coolant": "flood",
+              "material": {
+                "category": "all",
+                "query": ""
+              }
+            },
+            {
+              "name": "AluWrought_Face_Finish",
+              "description": null,
+              "guid": "17bd3cc5-c775-4b25-bb4e-24f4982dbd4e",
+              "n": 7640.0,
+              "v_f": 115.0,
+              "v_c": 1000.073661392751,
+              "f_z": 0.005017452006980803,
+              "f_n": 0.007853403141361256,
+              "n_ramp": 7640.0,
+              "v_f_leadIn": 115.0,
+              "v_f_leadOut": 115.0,
+              "v_f_transition": 115.0,
+              "v_f_ramp": 115.0,
+              "v_f_plunge": 60.0,
+              "use-stepdown": true,
+              "use-stepover": true,
+              "stepdown": 0.0666,
+              "stepover": 0.425,
+              "use-feed-per-revolution": false,
+              "tool-coolant": "flood",
+              "material": {
+                "category": "all",
+                "query": ""
+              }
+            }
+          ]
+        },
+        "shaft": {
+          "segments": [
+            {
+              "height": 0.4,
+              "lower-diameter": 0.49,
+              "upper-diameter": 0.49
+            },
+            {
+              "height": 0.05,
+              "lower-diameter": 0.5,
+              "upper-diameter": 0.5
+            }
+          ],
+          "type": "shaft"
+        },
+        "holder": {
+          "segments": [
+            {
+              "height": 0.241732,
+              "lower-diameter": 1.9,
+              "upper-diameter": 2.48
+            },
+            {
+              "height": 0.9,
+              "lower-diameter": 2.48,
+              "upper-diameter": 2.48
+            },
+            {
+              "height": 0.499213,
+              "lower-diameter": 1.9685,
+              "upper-diameter": 1.9685
+            },
+            {
+              "height": 0.106693,
+              "lower-diameter": 1.9685,
+              "upper-diameter": 1.75
+            },
+            {
+              "height": 0.575,
+              "lower-diameter": 1.75,
+              "upper-diameter": 1.75
+            },
+            {
+              "height": 0.05,
+              "lower-diameter": 1.75,
+              "upper-diameter": 1.85
+            },
+            {
+              "height": 0.03,
+              "lower-diameter": 2.442,
+              "upper-diameter": 2.502
+            },
+            {
+              "height": 0.145,
+              "lower-diameter": 2.502,
+              "upper-diameter": 2.502
+            },
+            {
+              "height": 0.079,
+              "lower-diameter": 2.502,
+              "upper-diameter": 2.215
+            },
+            {
+              "height": 0.118,
+              "lower-diameter": 2.215,
+              "upper-diameter": 2.215
+            },
+            {
+              "height": 0.079,
+              "lower-diameter": 2.215,
+              "upper-diameter": 2.502
+            },
+            {
+              "height": 0.143,
+              "lower-diameter": 2.502,
+              "upper-diameter": 2.502
+            },
+            {
+              "height": 0.03,
+              "lower-diameter": 2.502,
+              "upper-diameter": 2.442
+            },
+            {
+              "height": 0.125,
+              "lower-diameter": 1.75,
+              "upper-diameter": 1.75
+            }
+          ],
+          "type": "holder",
+          "gaugeLength": 3.121637999999999,
+          "guid": "0f8629c3-1ee5-481b-8d56-215e4b635181",
+          "description": "Maritool CAT40-ER40-3.0",
+          "unit": "inches"
+        },
+        "vendor": "Toolpath",
+        "product-id": "",
+        "product-link": "https://toolpath.com/?source=fusion-tool-definition"
+      }
+    ],
+    "version": 24
+  },
+  "step_file_content": "ISO-10303-21;\nHEADER;\n/* Generated by software containing ST-Developer\n * from STEP Tools, Inc. (www.steptools.com) \n */\n/* OPTION: using custom renumber hook */\n/* OPTION: strings as raw bytes, not using required /X/ escapes */\n\nFILE_DESCRIPTION(\n/* description */ ('STEP AP203'),\n/* implementation_level */ '2;1');\n\nFILE_NAME(\n/* name */ 'step_file',\n/* time_stamp */ '2025-08-21T20:58:37Z',\n/* author */ ('  '),\n/* organization */ ('  '),\n/* preprocessor_version */ 'ST-DEVELOPER v20',\n/* originating_system */ '  ',\n/* authorisation */ '  ');\n\nFILE_SCHEMA (('CONFIG_CONTROL_DESIGN'));\nENDSEC;\n\nDATA;\n#10=PROPERTY_DEFINITION_REPRESENTATION(#14,#12);\n#11=PROPERTY_DEFINITION_REPRESENTATION(#15,#13);\n#12=REPRESENTATION('',(#16),#163);\n#13=REPRESENTATION('',(#17),#163);\n#14=PROPERTY_DEFINITION('pmi validation property','',#168);\n#15=PROPERTY_DEFINITION('pmi validation property','',#168);\n#16=VALUE_REPRESENTATION_ITEM('number of annotations',COUNT_MEASURE(0.));\n#17=VALUE_REPRESENTATION_ITEM('number of views',COUNT_MEASURE(0.));\n#18=SHAPE_REPRESENTATION_RELATIONSHIP('','',#99,#19);\n#19=ADVANCED_BREP_SHAPE_REPRESENTATION('',(#97),#163);\n#20=PLANE('',#104);\n#21=PLANE('',#108);\n#22=PLANE('',#112);\n#23=PLANE('',#113);\n#24=ORIENTED_EDGE('',*,*,#36,.F.);\n#25=ORIENTED_EDGE('',*,*,#37,.T.);\n#26=ORIENTED_EDGE('',*,*,#37,.F.);\n#27=ORIENTED_EDGE('',*,*,#38,.F.);\n#28=ORIENTED_EDGE('',*,*,#39,.T.);\n#29=ORIENTED_EDGE('',*,*,#39,.F.);\n#30=ORIENTED_EDGE('',*,*,#36,.T.);\n#31=ORIENTED_EDGE('',*,*,#40,.F.);\n#32=ORIENTED_EDGE('',*,*,#41,.F.);\n#33=ORIENTED_EDGE('',*,*,#41,.T.);\n#34=ORIENTED_EDGE('',*,*,#40,.T.);\n#35=ORIENTED_EDGE('',*,*,#38,.T.);\n#36=EDGE_CURVE('',#42,#42,#48,.T.);\n#37=EDGE_CURVE('',#43,#43,#49,.T.);\n#38=EDGE_CURVE('',#44,#44,#50,.T.);\n#39=EDGE_CURVE('',#45,#45,#51,.T.);\n#40=EDGE_CURVE('',#46,#46,#52,.T.);\n#41=EDGE_CURVE('',#47,#47,#53,.T.);\n#42=VERTEX_POINT('',#145);\n#43=VERTEX_POINT('',#147);\n#44=VERTEX_POINT('',#151);\n#45=VERTEX_POINT('',#153);\n#46=VERTEX_POINT('',#157);\n#47=VERTEX_POINT('',#159);\n#48=CIRCLE('',#102,0.014365);\n#49=CIRCLE('',#103,0.014365);\n#50=CIRCLE('',#106,0.0252945);\n#51=CIRCLE('',#107,0.0252945);\n#52=CIRCLE('',#110,0.03);\n#53=CIRCLE('',#111,0.03);\n#54=EDGE_LOOP('',(#24));\n#55=EDGE_LOOP('',(#25));\n#56=EDGE_LOOP('',(#26));\n#57=EDGE_LOOP('',(#27));\n#58=EDGE_LOOP('',(#28));\n#59=EDGE_LOOP('',(#29));\n#60=EDGE_LOOP('',(#30));\n#61=EDGE_LOOP('',(#31));\n#62=EDGE_LOOP('',(#32));\n#63=EDGE_LOOP('',(#33));\n#64=EDGE_LOOP('',(#34));\n#65=EDGE_LOOP('',(#35));\n#66=FACE_BOUND('',#54,.T.);\n#67=FACE_BOUND('',#55,.T.);\n#68=FACE_BOUND('',#56,.T.);\n#69=FACE_BOUND('',#57,.T.);\n#70=FACE_BOUND('',#58,.T.);\n#71=FACE_BOUND('',#59,.T.);\n#72=FACE_BOUND('',#60,.T.);\n#73=FACE_BOUND('',#61,.T.);\n#74=FACE_BOUND('',#62,.T.);\n#75=FACE_BOUND('',#63,.T.);\n#76=FACE_BOUND('',#64,.T.);\n#77=FACE_BOUND('',#65,.T.);\n#78=CYLINDRICAL_SURFACE('',#101,0.014365);\n#79=CYLINDRICAL_SURFACE('',#105,0.0252945);\n#80=CYLINDRICAL_SURFACE('',#109,0.03);\n#81=ADVANCED_FACE('',(#66,#67),#78,.F.);\n#82=ADVANCED_FACE('',(#68),#20,.F.);\n#83=ADVANCED_FACE('',(#69,#70),#79,.F.);\n#84=ADVANCED_FACE('',(#71,#72),#21,.F.);\n#85=ADVANCED_FACE('',(#73,#74),#80,.T.);\n#86=ADVANCED_FACE('',(#75),#22,.T.);\n#87=ADVANCED_FACE('',(#76,#77),#23,.T.);\n#88=CLOSED_SHELL('',(#81,#82,#83,#84,#85,#86,#87));\n#89=STYLED_ITEM('',(#90),#97);\n#90=PRESENTATION_STYLE_ASSIGNMENT((#91));\n#91=SURFACE_STYLE_USAGE(.BOTH.,#92);\n#92=SURFACE_SIDE_STYLE('',(#93));\n#93=SURFACE_STYLE_FILL_AREA(#94);\n#94=FILL_AREA_STYLE('',(#95));\n#95=FILL_AREA_STYLE_COLOUR('',#96);\n#96=COLOUR_RGB('',0.627450980392157,0.627450980392157,0.627450980392157);\n#97=MANIFOLD_SOLID_BREP('Body1',#88);\n#98=SHAPE_DEFINITION_REPRESENTATION(#168,#99);\n#99=SHAPE_REPRESENTATION('Body1',(#100),#163);\n#100=AXIS2_PLACEMENT_3D('',#142,#114,#115);\n#101=AXIS2_PLACEMENT_3D('',#143,#116,#117);\n#102=AXIS2_PLACEMENT_3D('',#144,#118,#119);\n#103=AXIS2_PLACEMENT_3D('',#146,#120,#121);\n#104=AXIS2_PLACEMENT_3D('',#148,#122,#123);\n#105=AXIS2_PLACEMENT_3D('',#149,#124,#125);\n#106=AXIS2_PLACEMENT_3D('',#150,#126,#127);\n#107=AXIS2_PLACEMENT_3D('',#152,#128,#129);\n#108=AXIS2_PLACEMENT_3D('',#154,#130,#131);\n#109=AXIS2_PLACEMENT_3D('',#155,#132,#133);\n#110=AXIS2_PLACEMENT_3D('',#156,#134,#135);\n#111=AXIS2_PLACEMENT_3D('',#158,#136,#137);\n#112=AXIS2_PLACEMENT_3D('',#160,#138,#139);\n#113=AXIS2_PLACEMENT_3D('',#161,#140,#141);\n#114=DIRECTION('',(0.,0.,1.));\n#115=DIRECTION('',(1.,0.,0.));\n#116=DIRECTION('',(0.,0.,-1.));\n#117=DIRECTION('',(0.,1.,0.));\n#118=DIRECTION('',(0.,0.,-1.));\n#119=DIRECTION('',(0.,1.,0.));\n#120=DIRECTION('',(0.,0.,-1.));\n#121=DIRECTION('',(0.,1.,0.));\n#122=DIRECTION('',(0.,0.,-1.));\n#123=DIRECTION('',(0.,1.,0.));\n#124=DIRECTION('',(0.,0.,-1.));\n#125=DIRECTION('',(0.,1.,0.));\n#126=DIRECTION('',(0.,0.,-1.));\n#127=DIRECTION('',(0.,1.,0.));\n#128=DIRECTION('',(0.,0.,-1.));\n#129=DIRECTION('',(0.,1.,0.));\n#130=DIRECTION('',(0.,0.,-1.));\n#131=DIRECTION('',(0.,1.,0.));\n#132=DIRECTION('',(0.,0.,1.));\n#133=DIRECTION('',(1.,0.,0.));\n#134=DIRECTION('',(0.,0.,1.));\n#135=DIRECTION('',(1.,0.,0.));\n#136=DIRECTION('',(0.,0.,-1.));\n#137=DIRECTION('',(1.,0.,0.));\n#138=DIRECTION('',(0.,0.,-1.));\n#139=DIRECTION('',(-1.,0.,0.));\n#140=DIRECTION('',(0.,0.,1.));\n#141=DIRECTION('',(1.,0.,0.));\n#142=CARTESIAN_POINT('',(0.,0.,0.));\n#143=CARTESIAN_POINT('',(0.,0.,0.007));\n#144=CARTESIAN_POINT('',(0.,0.,0.01));\n#145=CARTESIAN_POINT('',(0.,0.014365,0.01));\n#146=CARTESIAN_POINT('',(0.,0.,0.004));\n#147=CARTESIAN_POINT('',(0.,0.014365,0.004));\n#148=CARTESIAN_POINT('',(0.,0.,0.004));\n#149=CARTESIAN_POINT('',(0.,0.,0.015));\n#150=CARTESIAN_POINT('',(0.,0.,0.02));\n#151=CARTESIAN_POINT('',(0.,0.0252945,0.02));\n#152=CARTESIAN_POINT('',(0.,0.,0.01));\n#153=CARTESIAN_POINT('',(0.,0.0252945,0.01));\n#154=CARTESIAN_POINT('',(0.,0.,0.01));\n#155=CARTESIAN_POINT('',(0.,0.,0.01));\n#156=CARTESIAN_POINT('',(0.,0.,0.02));\n#157=CARTESIAN_POINT('',(0.03,0.,0.02));\n#158=CARTESIAN_POINT('',(0.,0.,0.));\n#159=CARTESIAN_POINT('',(0.03,0.,0.));\n#160=CARTESIAN_POINT('',(0.,0.,0.));\n#161=CARTESIAN_POINT('',(0.,0.,0.02));\n#162=MECHANICAL_DESIGN_GEOMETRIC_PRESENTATION_REPRESENTATION('',(#89),#163);\n#163=(\nGEOMETRIC_REPRESENTATION_CONTEXT(3)\nGLOBAL_UNCERTAINTY_ASSIGNED_CONTEXT((#164))\nGLOBAL_UNIT_ASSIGNED_CONTEXT((#167,#166,#165))\nREPRESENTATION_CONTEXT('Body1','TOP_LEVEL_ASSEMBLY_PART')\n);\n#164=UNCERTAINTY_MEASURE_WITH_UNIT(LENGTH_MEASURE(1.E-8),#167,\n'DISTANCE_ACCURACY_VALUE','Maximum Tolerance applied to model');\n#165=(\nNAMED_UNIT(*)\nSI_UNIT($,.STERADIAN.)\nSOLID_ANGLE_UNIT()\n);\n#166=(\nNAMED_UNIT(*)\nPLANE_ANGLE_UNIT()\nSI_UNIT($,.RADIAN.)\n);\n#167=(\nLENGTH_UNIT()\nNAMED_UNIT(*)\nSI_UNIT($,.METRE.)\n);\n#168=PRODUCT_DEFINITION_SHAPE('','',#169);\n#169=PRODUCT_DEFINITION('','',#171,#170);\n#170=DESIGN_CONTEXT('',#177,'design');\n#171=PRODUCT_DEFINITION_FORMATION_WITH_SPECIFIED_SOURCE('','',#173,\n .NOT_KNOWN.);\n#172=PRODUCT_RELATED_PRODUCT_CATEGORY('','',(#173));\n#173=PRODUCT('Body1','Body1','Body1',(#175));\n#174=PRODUCT_CATEGORY('','');\n#175=MECHANICAL_CONTEXT('',#177,'mechanical');\n#176=APPLICATION_PROTOCOL_DEFINITION('international standard',\n'config_control_design',2010,#177);\n#177=APPLICATION_CONTEXT(\n'configuration controlled 3D designs of mechanical parts and assemblie\ns');\nENDSEC;\nEND-ISO-10303-21;\n",
+  "geometry_tracking_data": [
+    {
+      "entityToken": "/v4BAAAARlJLZXkAH4sIAAAAAAAA/42PTUoEMRCFb+AZ6gIFqUrSnSAiCDM7t+JGmlR+wM0oMh7AW3gAr+MdPIqV9MzoYkCphLy8fHmVGGAwWqQrrYqDKgLXnQkubu3XQ9u8fVx/7q/e7y8HaScQ4Wa4CdpEAV3igFJLRCpCbZ6kTjkp20kj5MVl9LEIOo6EEqaKycc5G7Yc2x+9vMt+Fpqx5czoQrSawIwUayglVYomjrc7sMCzBV2sXu791dUM43WG8c/xudW058wjaUCeXnellqWlXJeXmh+f61LSPsHNFmALHcL+wo1KFevgcTLkCSG4WxH+8U6UOXSmQ/X9mUT+VyL/TjyWUt/M7DBO5wEAAA==",
+      "area": 5.415477416258087
+    },
+    {
+      "entityToken": "/v4BAAAARlJLZXkAH4sIAAAAAAAA/4WP3UlEQQyFO7CGNBBIMv+ICMLum6/ii1wm8wO+qMhuAduFBdiOPViKM/eqC75IZsjhzEcmh0CARvHovCmJQzHY6Xi4uDWfD313er/+OFy93V+upPGgKp2kK5rMEW2WiNpqQq7KPXhtvuTBTpKUndqCLlVFK4lRo2+YXQqFxEjq//zlbHFBOWAvRdDGZMYEEeTUYq25caK07m7BAAeC0WacNQfNGeTGjWvOudQfk0Cfj0+11aXn0pbXVh5f2lLzIcPNHmAPE8I5bDfkENuR88sUvCF3GyJn75ei73V+alBf8FEPJoABAAA=",
+      "area": 6.482777757045617
+    },
+    {
+      "entityToken": "/v4BAAAARlJLZXkAH4sIAAAAAAAA/42PTUoEMRCFb+AZ6gIFqUrSnSAiCDM7t+JGmlR+wM0oMh7AW3gAr+MdPIqV9MzoYkCpQF5evryqGGAwWqQ7rYqDKgLXnQkubu3XQ9u8fVx/7q/e7y8HaScQ4Wa4CdpEAV3igFJLRCpCbZ6kTjkp20kj5MVl9LEIOo6EEqaKycc5G7Yc2x+9vMt+Fpqx5czoQrSawIwUayglVYomjtkdWODZgm5WH/f+6mqGUcOE8c/xudWkc+aRNCBPr7tSy9JSrstLzY/PdSlpn+BmC7CFDmGfcKNSxbp43Ax5QgjuVoR/vBNlDp3pUP18JpH/lci/E4+l1Ddr24Wx5wEAAA==",
+      "area": 15.893003075245408
+    },
+    {
+      "entityToken": "/v4BAAAARlJLZXkAH4sIAAAAAAAA/4WPTUoEMRCFb+AZ6gIFVZWkO0FEEGZ2bsWNNKn8gBsVmTnA3MIDeB3v4FFMunucTaNUIC8vX16qCASoFbedFyW+KQbbnQGu7s33U92dPm+/Djcfj9czaQZQlUpSFU1kjzaKRy05IGflOg5ahhQb20lSdmoTupAVrQRG9UPB6MKYSIyE+s9fziY3Ko9YUxK0PpiWIIIcis85Fg4U5t4tGJDRQNtMezzPQT2DmkF+nrM3tZpuyzyTBPp6fMklTzWmMr2X9PxWphwPEe72AHvoEPYOd002sSy53HQxewwPCyIX75eitUdeq5//SpSNRNlMPFejfgCWSaIl5wEAAA==",
+      "area": 13.617500557294129
+    },
+    {
+      "entityToken": "/v4BAAAARlJLZXkAH4sIAAAAAAAA/42PXUpEMQyFd+AasoFAk7b3togIwsybr+KLXJr+gC+jyLgAd+EC3I57cCmmveMoMqCkkNPTryetAQajRdppVRxUEbjuTHB2bT/u2ubl7fJ9f/F6ez5IO4EIN8NN0CYK6BIHlFoiUhFq8yR1yknZThohLy6jj0XQcSSUMFVMPs7ZsOXY/pjlXfaz0IwtZ0YXotUEZqRYQympUjRxvN2BBZ4taLN6uc9XVzOMKhPGP0foCZN+mQbk4XlXallaynV5qvn+sS4l7RNcbQG20CHsYRuVKtbF42TII0JwsyL87R0pc5hMh+r7E4n8r0T+mfhVSn0CSi2p+OcBAAA=",
+      "area": 37.69911184307752
+    },
+    {
+      "entityToken": "/v4BAAAARlJLZXkAH4sIAAAAAAAA/4WQS0pFMQyGd+AasoFAkr4REYR7Z07FiRyaPsCJilwX4C5cgNtxDy7Ftge84ERayE/6JU1+AgEah0fkXUkcisHOjIeLW/P90A/vn9dfp6uP+8tFGg+q0km6oskc0WaJqK0m5Krcg9fmSx7sJEnZqS3oUlW0khg1+obZpVBIjKT+z1/OFheUA/ZSBG1MZnQQQU4t1pobJ0prdgsGOBCMMNdZ9TR70JiE4tpzDvUnSaDPb0+11a3n0rbXVh5f2lbzKcPNEeAIE8JpymHIIfYr55cpeEfudkTOuV+KlsWy7OWl+QfvxoXrgAEAAA==",
+      "area": 28.274333882308138
+    },
+    {
+      "entityToken": "/v4BAAAARlJLZXkAH4sIAAAAAAAA/4WPTUoEMRCFb+AZ6gIFVZV0d4KIIMzs3IobaVL5ATcqMh7AW3gAr+MdPIqV7h5nMygVyOuXL69fCATIhm3nVUkwxeC7M8LFrft+aLv3z+uvw9XH/eVCuhFUpZE0RZc4oE8SUGuJyEW5TaPWMSdjO0nKg/qMQyyKXiKjhrFiGuKUSZzE9s+/Bp+HSXnClrOgD9FZgghyrKGUVDlSXLp7cCCTA9ucXV7eQT2DrAmF5Z291Ga6c+aRJNDnt6dSy9xSrvNrzY8vdS7pkOBmD7CHDmFvuDNpYl1yOuli8RjuVkRO3i9FW0fepn//lShnEuVs4nGM+gFTmBxh5wEAAA==",
+      "area": 8.174055567968392
+    }
+  ],
+  "part_name": "Toolpath-Flat Toolpath Test V2 Body1",
+  "document_creationId": "288b7c1d-f54f-4391-901d-1cf9089205c4",
+  "model_entityToken": "/v4BAAAARlJLZXkAH4sIAAAAAAAA/4WPzQkCMAyFN3CGLhBo0qZNEPHk0bsXD01/JnABt3AA13EHR7HtAhICj8dH3ot34vwcdDR3K5Kp0MXlJHe4hu99XJ7v8+dxet2OmwzJmdHwNAxCQYFYSMB6U8BmOHKynmqZ7CK9IVuswNoMIimCSepQWHP1FEjHnyyOlbNhhlErQRQN8wIRoHZprXRUr7v7+oU5/wDgrBVw1QAAAA==",
+  "setips_subtypekey": "AutoSetips",
+  "subtypekey": "ResponseImportProgram"
+}

@@ -1,0 +1,4 @@
+date,model,n_train_faces,n_test_faces,overall_accuracy,notes
+2026-04-18,rf_mfcad_baseline,1207577,259128,0.6604,RandomForest n_estimators=200 face-level 10-feat
+2026-04-20,rf_mfcad_v2,1207577,259128,0.6917,RandomForest n_estimators=200 15-feat comp+2hop
+2026-04-20,rf_mfcad_v3,8759,2202,0.5899,RandomForest 15-feat pipeline-features 356-parts

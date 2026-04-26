@@ -1,0 +1,30 @@
+# Dataset — STEP files and raw data (too large for git)
+Claude output for program sheet/Dataset/
+
+# Pipeline run logs
+Claude output for program sheet/logs/
+Toolpath/requests_history/
+Toolpath/persistent_state/
+Toolpath/bug_reports/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Office temp files
+~$*.xlsx
+~$*.docx
+
+# Internal docs (keep local, not in repo)
+ShiaanX Vision.docx
+
+# Large binary files
+*.zip
+
+# Separate independent repo (AD-007)
+shiaanx-backend/

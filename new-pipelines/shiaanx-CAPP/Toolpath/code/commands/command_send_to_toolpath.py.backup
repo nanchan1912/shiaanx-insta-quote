@@ -1,0 +1,834 @@
+import traceback
+import re
+import webbrowser
+
+import adsk.core
+import adsk.fusion
+
+from ..lib.event_utils import command_id_from_name, add_handler
+from ..lib.fusion_utils import Fusion, get_step_file_content, make_id, DEBUG_STEP_EXPORT
+from ..lib.general_utils import resource_path, log, handle_error, load_config, compress_step_content
+from ..lib.general_utils import addCommandToToolbar, removeCommandFromToolbar, get_addin_version
+from ..lib.general_utils import extract_step_body_names, extract_step_product_names, extract_step_shape_rep_names
+from ..lib.update_utils import download_update
+from ..lib.component_utils import FusionFullPath
+from ..lib.setup_utils import get_setup_selector_id
+from ..lib.client import Client
+from .command_RequestFusionOps import logic
+
+
+
+class SendToToolpath():
+    def __init__(self,testing=False):
+        self.setup_checkboxes = []
+        self.multiaxis_dropdowns = []
+        self.multiaxis_text = []
+        self.local_handlers = []
+        self.testing = testing
+
+        self.CMD_NAME = 'Send Part to Toolpath'
+        self.CMD_ID = command_id_from_name(self.CMD_NAME)
+        self.CMD_Description = 'Send the current part to Toolpath and continue in the Toolpath web app.'
+        self.ICON_FOLDER = resource_path("send_to_toolpath", '')
+
+        self.body = None
+        self.need_set_default_AutoSetups_body = True
+        self.idx_auto_setups = 0
+        self.idx_use_existing_setups = 1
+        self.setup_mode_idx = self.idx_auto_setups
+
+        self.setup_dropdown_name = "setup_mode"
+        self.auto_setips_body_name = "AutoSetips_body"
+        self.no_setup_text_name = "no_setup_text"
+        self.user_setups_table_name = "UserSetip_table"
+        self.user_setup_text_name = "user_setup_text"
+        self.setuptype_dropdown_name = "setup_type_dropdown"
+        self.support_geometry_dropdown_name = "support_geometry_type"
+        self.support_pedestal_dir_dropdown_name = "support_pedestal_dir"
+        self.support_window_offset_input_name = "support_window_offset_abs"
+        self.support_pedestal_flip_checkbox_name = "support_pedestal_flip"
+        # 0 = none, 1 = window, 2 = pedestal
+        self.support_geometry_mode = 0
+        # Pedestal direction in setup coordinate system (SCS). We now always
+        # use -Z in SCS, with no user selection UI.
+        self.support_pedestal_direction_scs = None
+        self.support_window_offset = 0.0
+        self.support_pedestal_flip = False
+
+
+        self.config = load_config()
+
+        self.progressDialog = None
+    # Executed when add-in is run.
+    def start(self):
+        ui = None
+        try:
+            fusion = Fusion()
+            ui = fusion.getUI()
+        
+            # Create a command Definition.
+            cmd_def = addCommandToToolbar(self.CMD_ID, self.CMD_NAME, self.CMD_Description, self.ICON_FOLDER, True)
+
+            add_handler(cmd_def.commandCreated, self.onCommandCreated, local_handlers=self.local_handlers)
+            
+        except:
+            log(traceback.format_exc())
+            if ui:
+                ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
+
+
+    def stop(self):
+        ui = None
+        try:
+            ui = Fusion().getUI()
+            removeCommandFromToolbar(self.CMD_ID)
+        except:
+            log(traceback.format_exc())
+            if ui:
+                ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
+
+    def update_visibilities(self,inputs):
+        assert self.setup_mode_idx in (self.idx_auto_setups, self.idx_use_existing_setups)
+        isvisible_auto_setups = self.setup_mode_idx == self.idx_auto_setups
+        isvisible_existing_setups = not isvisible_auto_setups
+        fusion = Fusion()
+        cam = fusion.getCAM()
+        setups = cam.setups
+
+
+        for input in self.setup_checkboxes:
+            adsk.core.BoolValueCommandInput.cast(input).isVisible = isvisible_existing_setups
+        for input in self.multiaxis_dropdowns:
+            adsk.core.DropDownCommandInput.cast(input).isVisible = isvisible_existing_setups and self.config["enable_multi_axis_setups"]
+
+        # Support-geometry dropdown is only relevant for existing setups and 3+2.
+        support_dd = adsk.core.DropDownCommandInput.cast(
+            inputs.itemById(self.support_geometry_dropdown_name)
+        )
+        support_dir_dd = adsk.core.SelectionCommandInput.cast(
+            inputs.itemById(self.support_pedestal_dir_dropdown_name)
+        )
+        flip_input = adsk.core.BoolValueCommandInput.cast(
+            inputs.itemById(self.support_pedestal_flip_checkbox_name)
+        )
+        window_offset_input = adsk.core.StringValueCommandInput.cast(
+            inputs.itemById(self.support_window_offset_input_name)
+        )
+        if support_dd:
+            visible = isvisible_existing_setups and self.config["enable_multi_axis_setups"]
+            if visible and self.multiaxis_dropdowns:
+                ma_input = adsk.core.DropDownCommandInput.cast(
+                    self.multiaxis_dropdowns[0]
+                )
+                if ma_input and ma_input.selectedItem:
+                    visible = ma_input.selectedItem.name == "ThreePlusTwoAxis"
+                else:
+                    visible = False
+            else:
+                visible = False
+            support_dd.isVisible = visible
+            # We no longer expose pedestal-axis or flip selection in the UI.
+            if support_dir_dd:
+                support_dir_dd.isVisible = False
+            if flip_input:
+                flip_input.isVisible = False
+            if window_offset_input:
+                show_window = visible and support_dd.selectedItem and support_dd.selectedItem.name == "Window"
+                window_offset_input.isVisible = show_window
+
+        sel_body = adsk.core.SelectionCommandInput.cast(inputs.itemById(self.auto_setips_body_name))
+        sel_body.isVisible = isvisible_auto_setups
+        
+        sel_table = adsk.core.TableCommandInput.cast(inputs.itemById(self.user_setups_table_name))
+        sel_table.isVisible = isvisible_existing_setups and len(setups)>0
+
+        sel_text = adsk.core.TextBoxCommandInput.cast(inputs.itemById(self.user_setup_text_name))
+        sel_text.isVisible = isvisible_existing_setups and len(setups)>0
+
+        no_setup_text = adsk.core.TextBoxCommandInput.cast(inputs.itemById(self.no_setup_text_name))
+        no_setup_text.isVisible = isvisible_existing_setups and len(setups)<=0
+
+
+    def set_AutoSetups_default_body_if_needed(self, inputs):
+        # From the fusion docs:
+        # addSelection 	Adds the selection to the list of selections associated with this input. 
+        # This method is not valid within the commandCreated event but must be used later in the command lifetime. 
+        # If you want to pre-populate the selection when the command is starting, you can use this method in the activate method of the Command. 
+        # It's also valid to use in other events once the command is running, such as the validateInputs event.
+        if not self.need_set_default_AutoSetups_body:
+            return 
+        sel_body = adsk.core.SelectionCommandInput.cast(inputs.itemById(self.auto_setips_body_name))
+        if sel_body.selectionCount == 0:
+            success = False
+            if self.body is not None:
+                try:
+                    success = sel_body.addSelection(self.body)
+                except RuntimeError as err:
+                    # TODO sometimes we get:
+                    #
+                    # RuntimeError: 3 : invalid argument selection
+                    #
+                    # despite selecting a BRepBody
+                    # not sure why
+                    handle_error(err, show_message_box=False)
+                    assert isinstance(self.body, adsk.fusion.BRepBody)
+                    pass
+            self.need_set_default_AutoSetups_body = not success
+
+    def get_setup_mode_selector(self, inputs):
+        if self.testing:
+            return inputs.itemById(self.setup_dropdown_name)
+        else:
+            return adsk.core.DropDownCommandInput.cast(inputs.itemById(self.setup_dropdown_name))
+    
+    def selection_is_valid(self, args):
+        eventArgs = adsk.core.ValidateInputsEventArgs.cast(args)
+        inputs = eventArgs.firingEvent.sender.commandInputs
+
+        # setups
+        setup_selection_isvalid = False
+        selectedItem = self.get_setup_mode_selector(inputs).selectedItem
+        if selectedItem is None:
+            eventArgs.areInputsValid = False
+            return
+        idx = selectedItem.index
+        if idx == self.idx_auto_setups:
+            sel_input = adsk.core.SelectionCommandInput.cast(inputs.itemById(self.auto_setips_body_name))
+            setup_selection_isvalid = sel_input.selectionCount == 1
+        elif idx == self.idx_use_existing_setups:
+            for selecetor in self.setup_checkboxes:
+                if selecetor.value:
+                    setup_selection_isvalid = True
+                    break
+        else:
+            raise Exception("Unreachable")
+        return setup_selection_isvalid
+        
+    def onValidateInputs(self, args):
+        # toollibs
+        setup_selection_isvalid = self.selection_is_valid(args)
+
+        eventArgs = adsk.core.ValidateInputsEventArgs.cast(args)
+        eventArgs.areInputsValid = setup_selection_isvalid
+
+
+    def onInputsChanged(self,args):
+        eventArgs = adsk.core.InputChangedEventArgs.cast(args)
+        changedInput = eventArgs.input
+        inputs = eventArgs.firingEvent.sender.commandInputs
+        
+        # update axes selection input visibility
+        if changedInput.id == self.setup_dropdown_name:
+            s = self.get_setup_mode_selector(inputs)
+            idx = s.selectedItem.index
+            self.setup_mode_idx = idx
+            if self.setup_mode_idx == self.idx_auto_setups:
+                self.need_set_default_AutoSetups_body = True
+
+        self.set_AutoSetups_default_body_if_needed(inputs)
+        self.update_visibilities(inputs)
+        if changedInput.id == self.support_window_offset_input_name:
+            txt = adsk.core.StringValueCommandInput.cast(changedInput)
+            if txt:
+                try:
+                    val = float(txt.value)
+                    if val < 0:
+                        val = 0.0
+                except Exception:
+                    val = 0.0
+                self.support_window_offset = val
+        if changedInput.id == self.support_pedestal_flip_checkbox_name:
+            flip = adsk.core.BoolValueCommandInput.cast(changedInput)
+            if flip:
+                self.support_pedestal_flip = flip.value
+    
+    def onActivate(self, args):
+        inputs = args.command.commandInputs
+        self.set_AutoSetups_default_body_if_needed(inputs)
+     
+    def onPreview(self, args):
+        pass
+
+    def get_creation_setups_and_body(self):
+        body = None
+
+        fusion = Fusion()
+        bodies = fusion.get_visible_bodies()
+        if len(bodies) > 0:
+            body = bodies[-1] # hack
+
+        cam = fusion.getCAM()
+        setups = cam.setups
+
+        return body, setups
+    
+    def get_setup_picker_initialization_data(self,setup, fusion_paths):
+        bodies = fusion_paths.get_bodies(setup)
+        nbodies = len(bodies)
+        initialValue : bool = nbodies == 1
+        setup_name_lower = setup.name.lower()
+        for keyword in ("probe", "probing"):
+            if keyword in setup_name_lower:
+                initialValue = False
+        # setup.isActive
+        selector_id : str = get_setup_selector_id(setup)
+        assert isinstance(initialValue, bool)
+        assert isinstance(selector_id, str)
+        resourceFolder = ""
+        if nbodies > 1:
+            initialValue = False
+            name = f"{setup.name} (Not supported: {nbodies}  > 1 bodies)"
+        else:
+            name = setup.name
+
+        body = None
+        if nbodies == 1:
+            body = bodies[0]
+
+        return initialValue, selector_id, resourceFolder, name, body
+
+    def onCommandCreated(self,args):
+        ui = None
+        try:
+            # Reload config to pick up any changes made in Options
+            self.config = load_config()
+
+            cmd = adsk.core.CommandCreatedEventArgs.cast(args).command
+            fusion_paths = FusionFullPath()
+
+            body, setups = self.get_creation_setups_and_body()
+            self.body = body
+
+            inputs = cmd.commandInputs
+            cmd.setDialogInitialSize(350, 400)
+            cmd.setDialogSize(350, 0) # Resets to proper size whenever called - 0 height means auto
+         
+            setup_mode = inputs.addDropDownCommandInput(self.setup_dropdown_name, "Send to Toolpath as", adsk.core.DropDownStyles.TextListDropDownStyle)
+        
+            if len(setups) > 0:
+                setup_mode.listItems.add("Model Body", False)
+                setup_mode.listItems.add("Existing Setups", True)
+                self.setup_mode_idx = self.idx_use_existing_setups
+                want_auto_setups = False
+            else:
+                setup_mode.listItems.add("Model Body", True)
+                setup_mode.listItems.add("Existing Setups", False)
+                self.setup_mode_idx = self.idx_auto_setups
+                want_auto_setups = True
+
+            ### body selector
+            sel_body = inputs.addSelectionInput(self.auto_setips_body_name, "Target Body", "Select model")
+            sel_body.addSelectionFilter("SolidBodies")
+            sel_body.setSelectionLimits(0, 1) # it is important to allow for 0 bodies. Otherwise there are strange fusion bugs see https://github.com/toolpath/ToolpathPackages/pull/2111
+            sel_body.isVisible = want_auto_setups
+
+            setup_mode.tooltip = """Generate a series of setups automatically or use your existing setups."""
+
+            no_setips_msg = 'Warning: No valid setups found.\nTo send setups to Toolpath, make sure they have:\n  • A model selected\n  • An orientation selected\nSet stock to "From Preceding Setup" for subsequent setups.'
+
+            no_setup_message = inputs.addTextBoxCommandInput(self.no_setup_text_name, '', no_setips_msg, 7, True)
+            no_setup_message.isVisible = (not want_auto_setups) and (len(setups) <= 0)
+
+            # Create a table command input with checkbox inputs for testing
+            tableInput = inputs.addTableCommandInput(self.user_setups_table_name, 'Available Setups', 3, '1:10:10')
+            tableInput.isVisible = not want_auto_setups and (len(setups) > 0)
+            # Get the CommandInputs object associated with the table
+            cmdInputs = adsk.core.CommandInputs.cast(tableInput.commandInputs)
+
+            isCheckBox = True
+            self.setup_checkboxes.clear()
+            self.multiaxis_dropdowns.clear()
+            self.multiaxis_text.clear()
+            for (i,setup) in enumerate(setups):
+
+                initialValue, selector_id, resourceFolder, name, body = self.get_setup_picker_initialization_data(setup, fusion_paths)
+                if not body is None:
+                    self.body = body
+
+                selector = cmdInputs.addBoolValueInput(selector_id, name, isCheckBox, resourceFolder, initialValue)
+                selectorText = cmdInputs.addTextBoxCommandInput(make_id(setup.name, i), '', name, 1, True)  # Read-only text
+                # Add the inputs to the table
+                tableInput.addCommandInput(selector, i, 0)
+                self.setup_checkboxes.append(selector)
+                tableInput.addCommandInput(selectorText, i, 1) # Span 1 additional column
+                if i == 0:
+                    ma_dropdown = cmdInputs.addDropDownCommandInput(self.setuptype_dropdown_name, "Setup type: ", adsk.core.DropDownStyles.TextListDropDownStyle)
+                    ma_dropdown.listItems.add("ThreeAxis", True)
+                    #ma_dropdown.listItems.add("ThreePlusOneAxis", False)
+                    ma_dropdown.listItems.add("ThreePlusTwoAxis", False)
+                    #ma_dropdown.listItems.add("SimultaneousFourAxis", False)
+                    #ma_dropdown.listItems.add("SimultaneousFiveAxis", False)
+
+                    # Add the inputs to the table
+                    tableInput.addCommandInput(ma_dropdown, i, 2)
+                    self.multiaxis_dropdowns.append(ma_dropdown)
+                
+              
+                selector.tooltip = """Select if this setup should be populated with operations.
+                WARNING: Selecting a setup, will overwrite any existing operations for that setup.
+                """
+            # Method 1: Text box with no label (full width)
+            user_setip_msg = 'Toolpath will program within the setup orientations you provide.\nEnsure stock is set to "From Preceding Setup" for subsequent setups.'
+            user_setup_message = inputs.addTextBoxCommandInput(self.user_setup_text_name, '', user_setip_msg, 5, True)
+            user_setup_message.isVisible = not want_auto_setups and (len(setups) > 0)
+
+            # Support-geometry choice (only meaningful for 3+2 multi-axis)
+            support_dd = inputs.addDropDownCommandInput(
+                self.support_geometry_dropdown_name,
+                "Support geometry",
+                adsk.core.DropDownStyles.TextListDropDownStyle,
+            )
+            support_dd.listItems.add("None", True)
+            support_dd.listItems.add("Pedestal", False)
+            support_dd.listItems.add("Window", False)
+            support_dd.isVisible = False
+
+            support_dir_sel = inputs.addSelectionInput(
+                self.support_pedestal_dir_dropdown_name,
+                "Pedestal axis",
+                "Select an origin axis (X/Y/Z) to define pedestal direction.",
+            )
+
+            support_dir_sel.addSelectionFilter("ConstructionLines")
+            support_dir_sel.setSelectionLimits(0, 1)
+            support_dir_sel.isVisible = False
+
+            # Optional flip for pedestal direction (+axis vs -axis).
+            flip_input = inputs.addBoolValueInput(
+                self.support_pedestal_flip_checkbox_name,
+                "Flip pedestal direction",
+                True,
+                "",
+                self.support_pedestal_flip,
+            )
+            flip_input.isVisible = False
+
+            # Window offset absolute distance 
+            window_offset_input = inputs.addStringValueInput(
+                self.support_window_offset_input_name,
+                "Window offset",
+                str(self.support_window_offset),
+            )
+            window_offset_input.isVisible = False
+
+            self.need_set_default_AutoSetups_body = True
+            self.update_visibilities(inputs)
+
+            cmd.isExecutedWhenPreEmpted = False
+            # https://help.autodesk.com/view/fusion360/ENU/?guid=GUID-C1BF7FBF-6D35-4490-984B-11EB26232EAD
+            # Specifies what the behavior will be when a command is preempted by the user executing another command. 
+            # If true (the default), and all of the current inputs are valid, the command will be executed just the same as if the user clicked the OK button. 
+            # If false, the command is terminated.
+
+
+            add_handler(cmd.inputChanged, self.onInputsChanged, local_handlers=self.local_handlers)
+            add_handler(cmd.execute, self.onCommandExecute, local_handlers=self.local_handlers)
+            add_handler(cmd.executePreview, self.onPreview, local_handlers=self.local_handlers)
+            add_handler(cmd.validateInputs, self.onValidateInputs, local_handlers=self.local_handlers)
+            add_handler(cmd.activate, self.onActivate, local_handlers=self.local_handlers)
+
+        except Exception as e:
+            handle_error(e, True)
+
+    def want_AutoSetips(self, inputs) -> bool:
+        s = self.get_setup_mode_selector(inputs)
+        return s.selectedItem.index == self.idx_auto_setups
+
+    def want_UserSpecifiedSetips(self, inputs) -> bool:
+        s = self.get_setup_mode_selector(inputs)
+        return s.selectedItem.index == self.idx_use_existing_setups
+    
+    def create_UserSpecifiedSetips(self, inputs) -> logic.UserSpecifiedSetips:
+        # setups
+        fusion = Fusion()
+        cam = fusion.getCAM()
+        setips = []
+        for (i,setup) in enumerate(cam.setups):
+            selector_id = get_setup_selector_id(setup)
+            selected : bool = inputs.itemById(selector_id).value
+            if i == 0:      
+                if self.testing:
+                    multiaxisInput = inputs.itemById(self.setuptype_dropdown_name)
+                else:
+                    input = self.multiaxis_dropdowns[i]
+                    multiaxisInput = adsk.core.DropDownCommandInput.cast(input)
+                multiaxis = multiaxisInput.selectedItem.name
+            else:
+                multiaxis = "ThreeAxis"
+            setip = logic.UserSpecifiedSetip(setup, compute_fusionops=selected,multi_axis=multiaxis)
+            setips.append(setip)
+        return logic.UserSpecifiedSetips(setips)
+
+    def create_AutoSetips(self) -> logic.AutoSetips:
+        return logic.AutoSetips(
+            body=self.body,
+            fusion = Fusion(),
+        )
+
+    def get_setips(self, inputs):
+        fusion = Fusion()
+        if self.want_UserSpecifiedSetips(inputs):
+            cam = fusion.getCAM()
+            setups = cam.setups
+            if len(setups) == 0:
+                raise Exception(f"No setup found. Please create a setup or use auto setup mode.")
+            setips = self.create_UserSpecifiedSetips(inputs)
+        elif self.want_AutoSetips(inputs):
+            if self.testing:
+                sel_input = inputs.itemById(self.auto_setips_body_name)
+            else:
+                sel_input = adsk.core.SelectionCommandInput.cast(inputs.itemById(self.auto_setips_body_name))
+            if sel_input.selectionCount == 0:
+                raise Exception("Please select a model to machine.")
+            assert sel_input.selectionCount == 1
+            self.body = sel_input.selection(0).entity
+            assert isinstance(self.body, adsk.fusion.BRepBody)
+            setips = self.create_AutoSetips()
+        else:
+            raise Exception(f"Unreachable")
+        return setips
+    
+    def needs_cancel(self):
+        adsk.doEvents()
+        if self.progressDialog is None:
+            return False
+        if self.progressDialog.wasCancelled:
+            log("needs_cancel")
+            return True
+        else:
+            return False
+
+    def confirm_export_if_issues(self) -> bool:
+        issues = self.diagnose()
+        if len(issues) == 0:
+            return True
+
+        text = "\n\n".join(issues)
+        msg = f"""
+        We encountered issues with the current document:
+
+        {text}
+        """
+        fusion = Fusion()
+        ui = fusion.getUI()
+        title = "Warning"
+        ui.messageBox(msg, title)
+        return False
+    
+    def diagnose(self):
+        return self.setips.diagnose()
+    
+    def get_body(self):
+        return self.setips.get_body()
+
+    def _get_first_selected_user_setip(self):
+        """
+        Return the first UserSpecifiedSetip with compute_fusionops == True,
+        or None if setips is not a UserSpecifiedSetips instance.
+        """
+        if not isinstance(self.setips, logic.UserSpecifiedSetips):
+            return None
+        for s in self.setips.setips:
+            if getattr(s, "compute_fusionops", False):
+                return s
+        return None
+
+    def get_support_geometry_mode(self, inputs) -> str | None:
+        """
+        Returns a mode name based on UI state ("PEDESTAL", "WINDOW"), or None
+        when no support geometry is requested. Only active when the first setup
+        is ThreePlusTwoAxis.
+        """
+        if not self.multiaxis_dropdowns:
+            return None
+
+        ma_input = adsk.core.DropDownCommandInput.cast(self.multiaxis_dropdowns[0])
+        if not ma_input or not ma_input.selectedItem:
+            return None
+        if ma_input.selectedItem.name != "ThreePlusTwoAxis":
+            return None
+
+        support_dd = adsk.core.DropDownCommandInput.cast(
+            inputs.itemById(self.support_geometry_dropdown_name)
+        )
+        if not support_dd or not support_dd.selectedItem:
+            return None
+
+        name = support_dd.selectedItem.name
+        if name == "Pedestal":
+            return "PEDESTAL"
+        if name == "Window":
+            return "WINDOW"
+        return None
+
+    def jsonify(self,config) -> dict:
+        fusion = Fusion()
+        body = self.get_body()
+
+        # === NAME DEBUG LOGGING ===
+        native_body = body.nativeObject if body.nativeObject else body
+
+        # Simulate Julia's make_safe_name function to preview what Julia will generate
+        def julia_make_safe_name(name):
+            """Python implementation of Julia's make_safe_name for debugging"""
+            import re
+            if not isinstance(name, str):
+                return ""
+            # strip whitespace
+            name = name.strip()
+            # replace whitespace sequences with underscore
+            name = re.sub(r'\s+', '_', name)
+            # replace [ and { with (, and ] and } with )
+            name = re.sub(r'[\[\{]', '(', name)
+            name = re.sub(r'[\]\}]', ')', name)
+            # remove non-safe chars (keep only 0-9 a-z A-Z - _ ( ) .)
+            name = re.sub(r'[^0-9a-zA-Z\-_().]', '', name)
+            return name
+
+        julia_safe_body_name = julia_make_safe_name(body.name)
+        julia_safe_native_name = julia_make_safe_name(native_body.name)
+
+        if DEBUG_STEP_EXPORT:
+            log(f"[NAME DEBUG] jsonify() - Body naming info:", force_console=True)
+            log(f"[NAME DEBUG]   body.name = '{body.name}'", force_console=True)
+            log(f"[NAME DEBUG]   native_body.name = '{native_body.name}'", force_console=True)
+            log(f"[NAME DEBUG]   Julia make_safe_name(body.name) = '{julia_safe_body_name}'", force_console=True)
+            log(f"[NAME DEBUG]   Julia make_safe_name(native_body.name) = '{julia_safe_native_name}'", force_console=True)
+            log(f"[NAME DEBUG]   body.nativeObject is None = {body.nativeObject is None}", force_console=True)
+            if body.assemblyContext:
+                log(f"[NAME DEBUG]   body.assemblyContext.name = '{body.assemblyContext.name}'", force_console=True)
+            else:
+                log(f"[NAME DEBUG]   body.assemblyContext = None", force_console=True)
+            log(f"[NAME DEBUG]   body.parentComponent.name = '{body.parentComponent.name}'", force_console=True)
+
+            # Check for potential name mismatch
+            if body.name != julia_safe_body_name:
+                log(f"[NAME DEBUG] ⚠️  POTENTIAL NAME MISMATCH!", force_console=True)
+                log(f"[NAME DEBUG]   Fusion sends: '{body.name}'", force_console=True)
+                log(f"[NAME DEBUG]   Julia expects: '{julia_safe_body_name}'", force_console=True)
+        # === END NAME DEBUG LOGGING ===
+
+        step_file_content = get_step_file_content(fusion, body, debug_name="debug-part")
+
+        # Extract body name from STEP file's MANIFOLD_SOLID_BREP entity
+        # This is what Parasolid/Julia will use when reading the STEP file
+        step_solid_brep_names = extract_step_body_names(step_file_content)
+        # extract_step_body_names already filters out empty names
+        non_empty_brep_names = step_solid_brep_names
+
+        # Use the MANIFOLD_SOLID_BREP name if available, otherwise fall back to body.name
+        if non_empty_brep_names:
+            step_body_name = non_empty_brep_names[0]
+            if DEBUG_STEP_EXPORT:
+                log(f"[NAME DEBUG] Using MANIFOLD_SOLID_BREP name from STEP: '{step_body_name}'", force_console=True)
+        else:
+            step_body_name = body.name
+            if DEBUG_STEP_EXPORT:
+                log(f"[NAME DEBUG] No MANIFOLD_SOLID_BREP name found, using body.name: '{step_body_name}'", force_console=True)
+
+        # === STEP FILE NAME DEBUG ===
+        if DEBUG_STEP_EXPORT:
+            # Extract other names for debugging using shared utilities
+            step_product_names = extract_step_product_names(step_file_content)
+            step_shape_rep_names = extract_step_shape_rep_names(step_file_content)
+            log(f"[NAME DEBUG] STEP file PRODUCT names: {step_product_names[:5]}", force_console=True)
+            log(f"[NAME DEBUG] STEP file MANIFOLD_SOLID_BREP names: {step_solid_brep_names[:5]}", force_console=True)
+            log(f"[NAME DEBUG] STEP file SHAPE_REPRESENTATION names: {step_shape_rep_names[:5]}", force_console=True)
+            all_step_names = step_product_names + step_solid_brep_names + step_shape_rep_names
+            unique_step_names = list(set(all_step_names))
+
+            # Also extract Julia-safe versions of STEP names for comparison
+            julia_safe_step_names = [julia_make_safe_name(n) for n in unique_step_names]
+            julia_safe_step_body_name = julia_make_safe_name(step_body_name)
+
+            # Summary comparison table
+            log(f"[NAME DEBUG] ========== SUMMARY COMPARISON ==========", force_console=True)
+            log(f"[NAME DEBUG] Fusion body.name: '{body.name}'", force_console=True)
+            log(f"[NAME DEBUG] STEP MANIFOLD_SOLID_BREP name: '{step_body_name}'", force_console=True)
+            log(f"[NAME DEBUG] JSON body_name being sent: '{step_body_name}'", force_console=True)
+            log(f"[NAME DEBUG] Julia make_safe_name(body_name): '{julia_safe_step_body_name}'", force_console=True)
+            log(f"[NAME DEBUG] STEP file unique names: {unique_step_names}", force_console=True)
+            log(f"[NAME DEBUG] STEP names (Julia-safe): {julia_safe_step_names}", force_console=True)
+            log(f"[NAME DEBUG] ==========================================", force_console=True)
+        # === END STEP FILE NAME DEBUG ===
+
+        # Compress STEP file content for smaller payload
+        step_file_compressed, compression_info = compress_step_content(step_file_content)
+
+        # Store for use in gather_request_data (stepFile upload)
+        self._step_file_compressed = step_file_compressed
+        self._step_file_compression = compression_info["compression"]
+
+        payload = {
+            "subtypekey": "RequestFusionOpsQA",
+            "setips" : self.setips.jsonify(),
+            "geometry": None,
+            "tool_libraries": None,
+            "geometry_tracking_data": self.setips.get_geometry_tracking_data(),
+            "preset_naming" : None,
+            "body_name" : step_body_name,
+            # direction in setup coordinate system (SCS)
+            "support_pedestal_direction_scs": self.support_pedestal_direction_scs,
+            "support_window_offset": float(self.support_window_offset),
+        }
+
+        for key in [
+            "deburr",
+            "use_pre_roughing",
+            "select_path",
+            "continue_on_fusionop_error",
+            "max_tool_limit",
+            "debug",
+            "experimental"
+        ]:
+            payload[key] = config[key]
+
+        payload["support_geometry_mode"] = self.support_geometry_mode
+
+        return payload
+
+    def gather_request_data(self,config,progressDialog):
+        fusion = Fusion()
+        payload = self.jsonify(config)
+
+        material_name = 'Aluminum, 6061-T6' # TODO remove this hack. It may not even be needed by the frontend anymore
+        if progressDialog is not None:
+            progressDialog.progressValue += 1
+        user = fusion.getUser()
+        if progressDialog is not None:
+            progressDialog.progressValue += 1
+        if self.needs_cancel(): return "cancelled"
+
+        # Get compressed step content from jsonify() (stored on self)
+        step_file_compressed = getattr(self, '_step_file_compressed', None)
+        step_file_compression = getattr(self, '_step_file_compression', None)
+
+        # Fallback: get fresh step content and compress it
+        body = self.get_body()
+        if step_file_compressed is None:
+            step_str = get_step_file_content(fusion, body.parentComponent, debug_name="debug-part-fallback")
+            if step_str:
+                step_file_compressed, compression_info = compress_step_content(step_str)
+                step_file_compression = compression_info["compression"]
+        if self.needs_cancel(): return "cancelled"
+
+        if progressDialog is not None:
+            progressDialog.progressValue += 1
+
+        docname = fusion.getApplication().activeDocument.name
+        # Use the body_name from payload (which is extracted from STEP MANIFOLD_SOLID_BREP)
+        step_body_name = payload.get("body_name", body.name) if payload else body.name
+        name = "{} - {}".format(docname, body.name)
+
+        # === NAME DEBUG LOGGING ===
+        if DEBUG_STEP_EXPORT:
+            log(f"[NAME DEBUG] gather_request_data() - Final request names:", force_console=True)
+            log(f"[NAME DEBUG]   docname = '{docname}'", force_console=True)
+            log(f"[NAME DEBUG]   body.name = '{body.name}'", force_console=True)
+            log(f"[NAME DEBUG]   step_body_name (from STEP) = '{step_body_name}'", force_console=True)
+            log(f"[NAME DEBUG]   combined name = '{name}'", force_console=True)
+            log(f"[NAME DEBUG]   body_name being sent = '{step_body_name}'", force_console=True)
+        # === END NAME DEBUG LOGGING ===
+
+        data = {
+            "subtypekey": "RequestQuoteAssistant",
+            "stepFile": step_file_compressed,
+            "stepFileCompression": step_file_compression,
+            "fusionUserId" : user.userId,
+            "fusionUserEmail" : user.email,
+            "name" : name,
+            "body_name" : step_body_name,
+            "toolLibraries" : None,
+            "material" : material_name,
+            "presetNaming" : None,
+            "product" : 'QA',
+            "product_specific_data" : payload,
+        }
+        return data
+
+    def get_and_store_setips(self,inputs):
+        self.setips = self.get_setips(inputs)
+        return self.setips
+    
+    def onCommandExecute(self, args):
+        # Here you can get the values from the inputs and execute your main logic.
+        command = args.firingEvent.sender
+        inputs = command.commandInputs
+
+        fusion = Fusion()
+        self.get_and_store_setips(inputs)
+        ui = fusion.getUI()
+        self.progressDialog = ui.createProgressDialog()
+        self.progressDialog.cancelButtonText = 'Cancel'
+        self.progressDialog.isBackgroundTranslucent = False
+        self.progressDialog.isCancelButtonShown = False
+        self.progressDialog.progressValue = 0
+
+        if self.needs_cancel(): return "cancelled"
+        if not self.confirm_export_if_issues():
+            self.progressDialog.hide()
+            return "cancelled"
+        # Determine support-geometry choice based on current UI.
+        self.support_geometry_mode = self.get_support_geometry_mode(inputs)
+
+        # If pedestal support is requested, automatically use -Z in the setup
+        # coordinate system; no user axis selection.
+        if self.support_geometry_mode == "PEDESTAL":
+            self.support_pedestal_direction_scs = [0.0, 0.0, -1.0]
+
+       
+        win_off_input = adsk.core.StringValueCommandInput.cast(
+            inputs.itemById(self.support_window_offset_input_name)
+        )
+        if win_off_input:
+            try:
+                val = float(win_off_input.value)
+                if val < 0:
+                    val = 0.0
+            except Exception:
+                val = 0.0
+            self.support_window_offset = val
+        self.config = load_config()
+
+        data = self.gather_request_data(self.config,self.progressDialog)
+        if data == "cancelled":
+            return "cancelled"
+        self.progressDialog.progressValue += 1
+        if self.needs_cancel(): return "cancelled"
+        self.progressDialog.show('Toolpath', 'Uploading to Toolpath. Please check your browser for results.', 0, 100)
+        client = Client(self.config)
+        try:
+            resp = client.request(data, method="POST")
+        except Exception as e:
+            
+            if e.code == 426:
+                current_version = get_addin_version()
+                msg_box1 = ui.messageBox(
+                    f"Version {current_version} of the add-in is out of date and can not upload files.\nAn updated version of the add-in will be downloaded for installation",
+                    "Update Needed",
+                    adsk.core.MessageBoxButtonTypes.OKButtonType,
+                )
+                self.progressDialog.hide()
+                download_update(verbose=True)
+                return
+            else:
+                raise Exception(f"Bad status_code: {e.code}")
+        if self.needs_cancel(): return "cancelled"
+        
+        magicLink = resp["magicLink"]
+        webbrowser.open(magicLink)
+
+
+        if resp == "cancelled":
+            self.progressDialog.hide()
+            return 
+        
+        self.progressDialog.progressValue = 100
+        self.progressDialog.hide()
+
+        # JSG Note: Turning this off for now, but leaving code here cause we might bring it back
+        # msg_box = ui.messageBox(
+        #     "Your model has been uploaded to Toolpath and can be found on your Projects page.\n\nPlease check your browser for results.",
+        #     "Upload Complete",
+        #     adsk.core.MessageBoxButtonTypes.OKButtonType,
+        # )

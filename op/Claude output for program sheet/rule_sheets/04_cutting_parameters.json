@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "ruleset_id": "cutting_parameters_v1",
+  "updated_at": "2026-04-14",
+  "description": "Machine limits, peck fractions, RPM/Vf formulas, ae/ap heuristics, and pass-type Vc/fz sourcing — mirrors 8. parameter_calculation.py. Per-tool Vc, fz, ap_max, ae_max, ae_fraction, ramp_plunge remain in 7a. tool_database.json (AD-003, AD-004).",
+  "pipeline_stage": "8. parameter_calculation.py",
+  "machine_defaults": {
+    "max_spindle_rpm": 10000,
+    "coolant_default": "through_spindle",
+    "coolant_allowed": ["through_spindle", "flood", "mist", "dry"]
+  },
+  "peck_fractions_of_tool_diameter": {
+    "comment": "Q = drill_diameter × fraction for G83; keys are coolant then cycle",
+    "through_spindle": { "peck": 0.8, "deep_peck": 0.5 },
+    "flood": { "peck": 0.5, "deep_peck": 0.3 },
+    "mist": { "peck": 0.4, "deep_peck": 0.25 },
+    "dry": { "peck": 0.3, "deep_peck": 0.2 }
+  },
+  "tsc_small_drill_boost": {
+    "applies_when_coolant": "through_spindle",
+    "operations": ["twist_drill", "micro_drill", "pilot_drill", "core_drill"],
+    "max_tool_diameter_mm_exclusive": 3.0,
+    "vc_multiplier": 1.15
+  },
+  "safety_and_rounding": {
+    "min_vf_mm_per_min": 10.0,
+    "rpm_round_to": 10,
+    "vf_round_to": 1
+  },
+  "cycle_time_estimation_s": {
+    "tool_change_per_unique_tool": 8.0
+  },
+  "formulas": {
+    "rpm": "RPM = (Vc_mmin × 1000) / (π × tool_diameter_mm)",
+    "vf_drill": "Vf = RPM × feed_per_rev_mm",
+    "vf_mill": "Vf = RPM × fz_mm × flute_count",
+    "rpm_cap": "If RPM > max_spindle_rpm, cap and recompute actual_Vc from capped RPM"
+  },
+  "vc_fz_source_by_pass_type": {
+    "RF": "Prefer tool_rec.Vc_rough[material] and fz_rough[material]; else material_params",
+    "FINISH": "Prefer Vc_finish / fz_finish",
+    "CORNER_R": "Same as FINISH",
+    "default": "material_params.Vc_mmin / fz_mm on tool record"
+  },
+  "depth_fallbacks": {
+    "spot_drill_depth_mm": "tool_diameter_mm × 0.5",
+    "face_mill_depth": "cluster depth if present else ap from tool or 2.0 mm"
+  },
+  "axial_depth_ap": {
+    "drills": "ap = full depth_mm when applicable",
+    "mills_with_ap_max": "ap = min(ap_max_mm from DB, depth) when depth known"
+  },
+  "radial_depth_ae": {
+    "drills": null,
+    "face_mill": "ae = ae_fraction × tool_dia if set; else ae_max; else 0.75 × tool_dia",
+    "face_mill_by_pass": {
+      "description": "Stepover percentages for face milling by pass type. Source: ShiaanX_Strategy_Rules_Final for face.xlsx (Gaurav). Overrides generic ae_fraction from tool DB when op is face_mill.",
+      "RF": 0.60,
+      "FINISH": 0.40,
+      "default": 0.60
+    },
+    "counterbore_mill": "ae = tool_dia / 2",
+    "circular_interp": "ae = ae_max or 0.5 × tool_dia",
+    "contour_mill_by_pass": {
+      "RF": 0.5,
+      "FINISH": 0.15,
+      "CORNER_R": 0.1,
+      "default": 0.5,
+      "cap": "min(ae_max, tool_dia × ratio) when ae_max present"
+    },
+    "pocket_mill_by_pass": {
+      "RF": 0.5,
+      "FINISH": 0.15,
+      "CORNER_R": 0.1,
+      "default": 0.5
+    }
+  },
+  "axial_depth_ap_by_pass": {
+    "description": "Explicit ap (DOC) values for face milling by pass type. Source: strategy rules sheet (Gaurav). Overrides tool DB ap_max when op is face_mill.",
+    "face_mill": {
+      "RF": 1.0,
+      "FINISH": 0.5,
+      "default": 1.0
+    }
+  },
+  "coolant_by_operation": {
+    "description": "Operation-type coolant overrides — takes precedence over machine global default. Source: strategy rules sheet (all face rules use flood, not through_spindle).",
+    "face_mill": "flood",
+    "contour_mill": "flood",
+    "pocket_mill": "flood",
+    "chamfer_mill": "flood",
+    "slot_mill": "flood",
+    "twist_drill": "through_spindle",
+    "micro_drill": "through_spindle",
+    "pilot_drill": "through_spindle",
+    "core_drill": "through_spindle",
+    "boring_bar": "through_spindle",
+    "tap_rh": "flood"
+  },
+  "spring_pass_note": "A spring pass is a repeat of the finish pass at zero additional DOC. It recovers elastic deflection of the tool and workpiece that occurred on the first finish pass. For aluminium facing, the strategy sheet marks Is_Finishing=TRUE rules with Spring_Pass=TRUE. In practice: emit a third face_mill step with pass_type=SPRING, identical parameters to FINISH, zero stock_to_leave. Not yet implemented in process_selection.py — tracked for future addition.",
+  "ramp_plunge": {
+    "location": "7a. tool_database.json per tool entry ramp_plunge",
+    "rule": "vf_ramp / vf_plunge as percent of cutting Vf at runtime (AD-004); not duplicated here."
+  },
+  "warnings": [
+    "If tool_id is NOT_FOUND, parameters are skipped with a note.",
+    "LIVE (applied at import): machine_defaults (max_spindle_rpm, coolant_default), peck_fractions_of_tool_diameter, tsc_small_drill_boost.vc_multiplier, safety_and_rounding (min_vf, rpm_round_to, vf_round_to), cycle_time_estimation_s.tool_change_per_unique_tool.",
+    "DOCUMENTATION ONLY (not yet globals): axial_depth_ap, radial_depth_ae, depth_fallbacks, vc_fz_source_by_pass_type — these are inline logic in calculate_parameters()."
+  ]
+}

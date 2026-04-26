@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta viewport="width=device-width, initial-scale=1.0">
+    <title>List with Dynamic Array</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        #itemsList li.selected {
+            background-color: #add8e6;
+        }
+
+        #itemsList li {
+            cursor: pointer;
+            border: 1px solid black;
+            /* Sets a black border around each list item */
+            padding: 8px;
+            /* Adds some space inside the border, around the list item's content */
+            margin-bottom: 5px;
+            /* Adds some space between each list item */
+            list-style-position: inside;
+            /* Ensures the bullet point or number is inside the border */
+        }
+
+        #itemsList li:hover {
+            background-color: #f0f0f0;
+        }
+
+        #contentBox {
+            margin-top: 20px;
+        }
+
+        ul,
+        ol {
+            list-style-type: none;
+        }
+    </style>
+</head>
+
+<body>
+    <table>
+        <tr>
+            <td>
+                <h4>Please select a material</h4>
+            </td>
+            <td>    
+                <h4>Please select Tool libraries</h4>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <ul id="itemsList"></ul>
+                <input type="text" id="newBundleNameInput" placeholder="New material name"
+                    title="Enter a new material name here. It must be distinct from existing ones.">
+                <button id="addBundleButton"
+                    title="Click to add a new material to the list. Don't forget to adjust the preset names below afterwards.">New
+                    material</button>
+                <button id="removeSelectedBundleButton" title="Delete selected material.">Remove selected</button>
+                <p>Preset names are case sensitive and comma separated.</p>
+                <table>
+                    <caption>
+                        <h4 id="titlePresetNamesAndPriorities"></h4>
+                    </caption>
+                    <tr>
+                        <td title="These preset names will be used for finishing operations">Bore finish</td>
+                        <td><textarea id="contentBox_tp_bore_finish" placeholder="Bore finishing presets go here"
+                                title="Edit to change preset names for currently selected material."></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td title="These preset names will be used facing finish">Facing finish</td>
+                        <td><textarea id="contentBox_tp_face" placeholder="Facing finish presets go here"
+                                title="Edit to change preset names for currently selected material."></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td title="These preset names will be used for floor finishing operations">Finish floor</td>
+                        <td><textarea id="contentBox_tp_floor_finish" placeholder="floor finish presets go here"
+                                title="Edit to change preset names for currently selected material."></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td title="These preset names will be used for wall finishing operations">Finish wall</td>
+                        <td><textarea id="contentBox_tp_wall_finish" placeholder="wall finish presets go here"
+                                title="Edit to change preset names for currently selected material."></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td title="These preset names will be used for most 3D finishing operations">3D finish</td>
+                        <td><textarea id="contentBox_tp_surface" placeholder="3D finish presets go here"
+                                title="Edit to change preset names for currently selected material."></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td
+                            title="These preset names will be used for Traditional roughing.">
+                            Traditional roughing</td>
+                        <td><textarea id="contentBox_tp_traditional_rough" placeholder="Traditional roughing goes here"
+                                title="Edit to change preset names for currently selected material."></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td
+                            title="These preset names will be used for most adaptive roughing operations.">
+                            Adaptive rough</td>
+                        <td><textarea id="contentBox_tp_adaptive_rough" placeholder="adaptive roughing presets go here"
+                                title="Edit to change preset names for currently selected material."></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td
+                            title="These preset names will be used for face roughing operations.">
+                            Face rough</td>
+                        <td><textarea id="contentBox_tp_face_rough" placeholder="Face roughing presets go here"
+                                title="Edit to change preset names for currently selected material."></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td
+                            title="These preset names will be used for special operations like chamfering, undercuts, corner rounding etc.">
+                            Special Ops</td>
+                        <td><textarea id="contentBox_tp_special" placeholder="chamfer, undercut, etc. presets go here"
+                                title="Edit to change preset names for currently selected material."></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td title="These preset names will be used for bore roughing operations">Bore rough</td>
+                        <td><textarea id="contentBox_tp_bore_rough" placeholder="Bore roughing presets go here"
+                                title="Edit to change preset names for currently selected material."></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td title="These preset names will be used for slot roughing operations">Slot</td>
+                        <td><textarea id="contentBox_tp_slot" placeholder="Slot roughing presets go here"
+                                title="Edit to change preset names for currently selected material."></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td title="These preset names will be used for drilling and spotting">Drill</td>
+                        <td><textarea id="contentBox_tp_drill" placeholder="Drilling presets go here"
+                                title="Edit to change preset names for currently selected material."></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td
+                            title="These preset names will be used for engraving.">
+                            Engrave </td>
+                        <td><textarea id="contentBox_tp_engrave" placeholder="engrave presets go here"
+                                title="Edit to change preset names for currently selected material."></textarea>
+                        </td>
+                    </tr>
+                </table>
+                <button id="submitEditButton"
+                    title="Click to submit edits to the preset names for the currently selected material.">Save
+                    changes</button>
+
+
+            </td>
+            <td>
+                <div id="toollibForestContainer"></div>
+            </td>
+        </tr>
+
+    </table>
+
+
+    <script src="CuttingConfigTab.js"></script>
+</body>
+
+</html>
